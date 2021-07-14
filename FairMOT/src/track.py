@@ -243,29 +243,10 @@ def eval_seq(opt, video_name, dataloader, data_type, result_filename, save_dir=N
         #print(data)
         #f.write(data)
 
-        # MOT 데이터가 하나 이상이라면
-        if len(motdatas) >= 1:
-            # 이전 데이터와 현재 Timestamp가 동일하지 않고, 첫 번째 Timestamp와도 동일하지 않다면
-            if motdatas[len(motdatas) - 1]['time'] != d and motdatas[0]['time'] != d:
-                # 잡힌 Object 수가 0이라면
-                if len(online_ids) == 0:
-                    # Timestamp 정보와 0 추가
-                    motdatas.append({'time': d, 'count': 0})
-                # Object가 1 이상이면
-                else:
-                    # Timestamp 정보와 1 추가
-                    motdatas.append({'time': d, 'count': 1})
-        # MOT Data가 없으면 일단 추가
-        else:
-            # 잡힌 Object 수가 0이라면
-            if len(online_ids) == 0:
-                # Timestamp 정보와 0 추가
-                motdatas.append({'time': d, 'count': 0})
-            # Object가 1 이상이면
-            else:
-                # Timestamp 정보와 1 추가
-                motdatas.append({'time': d, 'count': 1})
-
+        # MOT 데이터가 0개거나, 이전 데이터와 현재 Timestamp가 동일하지 않고, 첫 번째 Timestamp와도 동일하지 않다면
+        if len(motdatas) == 0 or (motdatas[len(motdatas) - 1]['time'] != d and motdatas[0]['time'] != d):
+            # 추가
+            motdatas.append({'time': d, 'count': len(online_ids)})
 
         if show_image or save_dir is not None:
             online_im, trajectory_points = vis.plot_tracking(img0, online_tlwhs, online_ids, trajectory_points, frame_id=frame_id,
