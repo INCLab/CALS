@@ -1,3 +1,6 @@
 FairMOT/videos
 FairMOT/models
 FairMOT/demos
+
+__pycache__/
+*.py[cod]
