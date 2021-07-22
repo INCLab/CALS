@@ -25,9 +25,7 @@ def demo(opt):
     mkdir_if_missing(result_root)
 
     logger.info('Starting tracking...')
-    # ch01 - 20210512 - 170547 - 170807 - 101000000000
-    # ch01-20210512-192233-194121-101000000000
-    video_name = 'ch01-20210512-192106-194821-101000000000.mp4'
+    video_name = 'ch02-20210706-155247-155428-101000000000.mp4'
 
     dataloader = datasets.LoadVideo('../videos/'+video_name, opt.img_size)
 
