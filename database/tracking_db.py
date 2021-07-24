@@ -1,5 +1,5 @@
 from sqlalchemy import Table, Column, MetaData, create_engine, insert, select
-from sqlalchemy.dialects.mysql import DOUBLE, TIMESTAMP, INTEGER
+from sqlalchemy.dialects.mysql import DOUBLE, DECIMAL, INTEGER
 
 class tracking_db:
     db_user = 'tracking'
@@ -16,14 +16,14 @@ class tracking_db:
 
         # Create CSI Table (time (unix timestamp, primary key), _0 ~ _63 (double))
         self.CSITable = Table('csi', self.metadata,
-                         Column('time', TIMESTAMP(6), primary_key=True, nullable=False))
+                         Column('time', DECIMAL(20, 6), primary_key=True, nullable=False))
 
         for i in range(0, 64):
             self.CSITable.append_column(Column('_' + str(i), DOUBLE, nullable=False))
 
         # Create MOT Table (time (unix timestamp), count (int))
         self.MOTTable = Table('mot', self.metadata,
-                         Column('time', TIMESTAMP(6), primary_key=True, nullable=False),
+                         Column('time', DECIMAL(20, 3), primary_key=True, nullable=False),
                          Column('count', INTEGER, nullable=False))
 
         # Run Create All Table Command

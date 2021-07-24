@@ -25,13 +25,13 @@ def demo(opt):
     mkdir_if_missing(result_root)
 
     logger.info('Starting tracking...')
-    video_name = 'ch02-20210706-155247-155428-101000000000.mp4'
+    video_name = 'ch02-20210706-155247-155427-101000000000.mp4'
 
     dataloader = datasets.LoadVideo('../videos/'+video_name, opt.img_size)
 
 
 
-    result_filename = os.path.join('../demos/0512_results.txt') # ../demos/results.txt
+    result_filename = os.path.join('../demos/results.txt') # ../demos/results.txt
     frame_rate = dataloader.frame_rate
 
     frame_dir = None if opt.output_format == 'text' else osp.join(result_root, 'frame')

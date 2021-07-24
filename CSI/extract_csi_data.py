@@ -42,13 +42,8 @@ if __name__ == "__main__":
     # Decimal to Float
     floatts = list(map(float, timestamps))
 
-    # Float to Datetime
-    times = []
-    for timestamp in floatts:
-        times.append(datetime.fromtimestamp(timestamp))
-
     # Insert Timestamps
-    csi_df.insert(0, 'time', times)
+    csi_df.insert(0, 'time', floatts)
 
     # Rename Subcarriers Column Name
     columns = {}
