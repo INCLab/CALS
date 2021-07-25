@@ -1,3 +1,4 @@
+import pandas as pd
 from sqlalchemy import Table, Column, MetaData, create_engine, insert, select
 from sqlalchemy.dialects.mysql import DOUBLE, DECIMAL, INTEGER
 
@@ -37,6 +38,11 @@ class tracking_db:
     def get_csi(self):
         result = self.connection.execute(select(self.CSITable))
         return result.fetchall()
+
+    # Get CSI dataframe
+    def get_csi_df(self):
+        csi_df = pd.read_sql_table('csi', self.connection)
+        return csi_df
 
     # Insert MOT Data List to Database
     def insert_mot(self, mot_list):
