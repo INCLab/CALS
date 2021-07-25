@@ -1,29 +1,42 @@
 from database.tracking_db import tracking_db
+import numpy as np
 
+label = {}
+threshold = 0.5  # error threshold
 db = tracking_db()
 csi_datas = db.get_csi()
-mot_datas = db.get_mot()
+mot_datas = dict(db.get_mot())
 
-mot_result = dict(mot_datas)
+# Datalist에서 Value와 가장 유사한 값을 찾음
+def matching_values(datalist, value):
+    # Threshold 범위 내의 값만 Numpy Array에 담음
+    array = datalist[np.where(abs(datalist - value) < threshold)]
 
-label = []
-threshold = 0.5  # error threshold
-
-for csi_time in csi_datas:
-    fre = [0, 0]
-    flag = 0
-
-    for mot_time in mot_result.keys():
-        if abs(csi_time[0].timestamp() - mot_time.timestamp()) < threshold:
-            flag = 1
-            fre[int(mot_result[mot_time])] += 1
-        elif flag == 1:
-            break
-
-    if max(fre) == 0:
-        label.append(-1)
+    # 해당하는 값이 하나 이상이면
+    if array.size > 0:
+        # 그 중 가장 작은 값의 Index를 리턴
+        minvalue = array.argmin()
+        return array[minvalue]
     else:
-        label.append(fre.index(max(fre)))
+        # 하나도 없다면 -1
+        return -1
+
+# MOT Timestamp List (nparray)
+mot_times = np.asarray(list(map((lambda x: x), mot_datas.keys())))
+
+for csi_data in csi_datas:
+    # 두 값을 비교해 현재 CSI Time과 가장 유사한 MOT Time을 구함
+    compare = matching_values(mot_times, csi_data[0])
+
+    # -1이면 매칭 실패
+    if compare == -1:
+        label[csi_data[0]] = -1
+    # 그 외에는 해당하는 MOT Timestamp가 Return 되므로 그 값을 Label에 담음
+    else:
+        label[csi_data[0]] = mot_datas[compare]
+
+        # 이미 뽑은건 제거
+        mot_times = np.delete(mot_times, np.argwhere(mot_times == compare))
 
 print(label)
 

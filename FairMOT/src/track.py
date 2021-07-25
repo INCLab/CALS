@@ -231,7 +231,7 @@ def eval_seq(opt, video_name, dataloader, data_type, result_filename, save_dir=N
         # result_time, video_time, video_minute = check_time(video_time, video_minute, video_second, time)
 
         current_time = video_name[0:4] + '-' + video_name[4:6] + '-' + video_name[6:8] + ' ' + check_time(video_name[8:10], video_name[10:12], video_name[12:14], time)
-        d = datetime.datetime.strptime(current_time, '%Y-%m-%d %H:%M:%S.%f')
+        d = datetime.datetime.strptime(current_time, '%Y-%m-%d %H:%M:%S.%f').timestamp()
         #data = video_name[0:4]+'-'+video_name[4:6]+'-'+video_name[6:8]+' '+check_time(video_name[8:10], video_name[10:12], video_name[12:14], time)
 
         # Date Format Str to Timestamp
