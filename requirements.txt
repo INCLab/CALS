@@ -18,3 +18,5 @@ scapy
 pandas
 sqlalchemy
 mysqlclient
+pypcap
+dpkt
