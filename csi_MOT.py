@@ -54,12 +54,14 @@ for csi_data in csi_datas:
         # 이미 뽑은건 제거
         mot_times = np.delete(mot_times, np.argwhere(mot_times == compare))
 
-print(label_list)
+
 csi_df = db.get_csi_df()
 
 csi_df['label'] = label_list
-print(csi_df)
 
+
+
+# ============= Subcarrier Choice Ver. =================
 # Define number of features
 feature_num = 100
 

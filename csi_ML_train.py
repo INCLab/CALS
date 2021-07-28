@@ -12,25 +12,24 @@ warnings.filterwarnings('ignore')
 
 
 def train_rf(csi_df):
-    col = list(range(0, 63))  # 채널 수 0부터 91까지(0(타임스탬프) 1-90(CSI subcarrier index)
+    # Drop timestamp
+    df.drop([df.columns[0]], axis=1, inplace=True)
 
-    df.drop([df.columns[0]], axis=1, inplace=True)  # 시간 정보 필요없으니까 날려
-
-    X = df.drop(['label'], 1)
-    y = df['label']
+    X = df.drop(['label'], 1)  # features
+    y = df['label']  # target
 
     # train 75%, valid 25%
     x_train, x_valid, y_train, y_valid = train_test_split(X, y)
 
-    # PCA 차원 축소(써보고 테스트 데이터셋으로 성능 높아지는 지 선택적으로 하기)
-    pca = PCA(n_components=6)  # 학습 column 64개에서 6개로 column 축소
-    principalComponents = pca.fit_transform(x_train)
-    nx_train = pd.DataFrame(data=principalComponents, columns=['pc1', 'pc2', 'pc3', 'pc4', 'pc5', 'pc6'])
-
-    principalComponents = pca.fit_transform(x_valid)
-    nx_valid = pd.DataFrame(data=principalComponents, columns=['pc1', 'pc2', 'pc3', 'pc4', 'pc5', 'pc6'])
-
-    print("PCA 후 분산 : ", round(sum(pca.explained_variance_ratio_), 3))
+    # # PCA 차원 축소(써보고 테스트 데이터셋으로 성능 높아지는 지 선택적으로 하기)
+    # pca = PCA(n_components=6)  # 학습 column 64개에서 6개로 column 축소
+    # principalComponents = pca.fit_transform(x_train)
+    # nx_train = pd.DataFrame(data=principalComponents, columns=['pc1', 'pc2', 'pc3', 'pc4', 'pc5', 'pc6'])
+    #
+    # principalComponents = pca.fit_transform(x_valid)
+    # nx_valid = pd.DataFrame(data=principalComponents, columns=['pc1', 'pc2', 'pc3', 'pc4', 'pc5', 'pc6'])
+    #
+    # print("PCA 후 분산 : ", round(sum(pca.explained_variance_ratio_), 3))
 
     # RF 파라미터
     parameter = {
@@ -47,7 +46,6 @@ def train_rf(csi_df):
     print("======================RF======================")
     # RF
     rf = RandomForestClassifier(random_state=0)
-
 
     # 최적의 모델 생성
     rf_grid = GridSearchCV(rf, param_grid=parameter, scoring="accuracy", n_jobs=-1, cv=kfold)
