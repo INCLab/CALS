@@ -4,6 +4,8 @@ import warnings
 
 from mlxtend.evaluate import confusion_matrix
 from sklearn.decomposition import PCA
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV
 from sklearn.metrics import classification_report, accuracy_score
@@ -13,10 +15,10 @@ warnings.filterwarnings('ignore')
 
 def train_rf(csi_df):
     # Drop timestamp
-    df.drop([df.columns[0]], axis=1, inplace=True)
+    csi_df.drop([csi_df.columns[0]], axis=1, inplace=True)
 
-    X = df.drop(['label'], 1)  # features
-    y = df['label']  # target
+    X = csi_df.drop(['label'], 1)  # features
+    y = csi_df['label']  # target
 
     # train 75%, valid 25%
     x_train, x_valid, y_train, y_valid = train_test_split(X, y)
@@ -42,6 +44,7 @@ def train_rf(csi_df):
 
     # ====== storage model(처음 저장할 때) ====== #
     kfold = KFold(10, shuffle=True)
+
 
     print("======================RF======================")
     # RF
@@ -69,6 +72,31 @@ def train_rf(csi_df):
     print('score : {:.4f}'.format(accuracy_score(y_valid, prediction)))
     print(confusion_matrix(y_valid, prediction))
     print(classification_report(y_valid, prediction))
+
+
+    print("======================SVM======================")
+
+    parameters = {'C': [0.1, 1.0, 10.0],
+                  'kernel': ["linear", "poly", "rbf", "sigmoid"],
+                  'degree': [1, 2, 3],
+                  'gamma': ['scale', 'auto']}
+
+    svm = SVC()
+    svm_model = GridSearchCV(svm, parameters, cv=kfold)
+    svm_model.fit(x_train, y_train)
+
+    print('best parameter: ', svm_model.best_params_)
+    print('best score: %.2f' % svm_model.best_score_)
+
+    svm_best = svm_model.best_estimator_
+
+    # 검증
+    prediction = svm_best.predict(x_valid)
+
+    print('score : {:.4f}'.format(accuracy_score(y_valid, prediction)))
+    print(confusion_matrix(y_valid, prediction))
+    print(classification_report(y_valid, prediction))
+
 
     print("======================LR======================")
 

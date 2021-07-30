@@ -59,38 +59,46 @@ csi_df = db.get_csi_df()
 
 csi_df['label'] = label_list
 
+# Drop unnecessary rows (label '-1')
+csi_df.drop(csi_df[csi_df['label'] == -1].index, inplace=True)
+csi_df.reset_index(drop=True, inplace=True)
 
+
+# ============= Using all subcarrier Ver. ==============
+from csi_ML_train import train_rf
+train_rf(csi_df)
 
 # ============= Subcarrier Choice Ver. =================
-# Define number of features
-feature_num = 100
+# # Define number of features
+# feature_num = 100
+#
+# # Define subcarrier index
+# '''
+#     Null carrier index: 0, 1, 2, 3, 32 , 61, 62, 63
+# '''
+# sub_list = [7, 8, 14, 15, 20, 21, 40, 41, 54, 55]
+#
+# '''
+#     Create label '1(one person)' data
+# '''
+# for sub_idx in range(0, len(csi_df.columns)):
+#     packet_num = 0
+#     subcarrier_array = []
+#
+#     while (packet_num <= len(csi_df) - feature_num):
+#         if packet_num == 0:
+#             subcarrier = csi_df[sub_idx].iloc[packet_num:packet_num + feature_num]
+#             sub_array = np.array(subcarrier)
+#             subcarrier_array = sub_array.reshape(1, -1)
+#         else:
+#             subcarrier = csi_df[sub_idx].iloc[packet_num:packet_num + feature_num]
+#             sub_array = np.array(subcarrier)
+#             sub_array = sub_array.reshape(1, -1)
+#
+#             subcarrier_array = np.concatenate((subcarrier_array, sub_array), axis=0)
+#
+#         packet_num += 100
+#
+#     new_df = pd.DataFrame(subcarrier_array)
 
-# Define subcarrier index
-'''
-    Null carrier index: 0, 1, 2, 3, 32 , 61, 62, 63
-'''
-sub_list = [7, 8, 14, 15, 20, 21, 40, 41, 54, 55]
-
-'''
-    Create label '1(one person)' data 
-'''
-for sub_idx in range(0, len(csi_df.columns)):
-    packet_num = 0
-    subcarrier_array = []
-
-    while (packet_num <= len(csi_df) - feature_num):
-        if packet_num == 0:
-            subcarrier = csi_df[sub_idx].iloc[packet_num:packet_num + feature_num]
-            sub_array = np.array(subcarrier)
-            subcarrier_array = sub_array.reshape(1, -1)
-        else:
-            subcarrier = csi_df[sub_idx].iloc[packet_num:packet_num + feature_num]
-            sub_array = np.array(subcarrier)
-            sub_array = sub_array.reshape(1, -1)
-
-            subcarrier_array = np.concatenate((subcarrier_array, sub_array), axis=0)
-
-        packet_num += 100
-
-    new_df = pd.DataFrame(subcarrier_array)
 
