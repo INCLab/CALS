@@ -40,7 +40,7 @@ def train_rf(csi_df):
         'min_samples_leaf': [3, 5, 7, 10],
         'min_samples_split': [2, 3, 5, 10]}
 
-    name = 'CSI_clsModel.asv'  # 저장할 모델 이름
+    #name = 'CSI_clsModel.asv'  # 저장할 모델 이름
 
     # ====== storage model(처음 저장할 때) ====== #
     kfold = KFold(10, shuffle=True)
@@ -54,7 +54,7 @@ def train_rf(csi_df):
     rf_grid = GridSearchCV(rf, param_grid=parameter, scoring="accuracy", n_jobs=-1, cv=kfold)
     rf_grid.fit(x_train, y_train)
 
-    pickle.dump(rf_grid, open(name, 'wb'))
+    #pickle.dump(rf_grid, open(name, 'wb'))
 
     # 검증
     prediction = rf_grid.predict(x_valid)
@@ -126,12 +126,12 @@ def train_rf(csi_df):
     # ========================================== #
 
 
-    # load model(저장된 거 불러와서 새로운 테스트셋 성능 검증할 때)
-    load_model = pickle.load(open(name, 'rb'))
-    print(len(x_valid))
-    print(x_valid)
-    prediction = load_model.predict(x_valid)
-
-    print('score : {}'.format(round(load_model.best_estimator_.score(x_valid, y_valid), 3)))
-    print(confusion_matrix(y_valid, prediction))
-    print(classification_report(y_valid, prediction))
+    # # load model(저장된 거 불러와서 새로운 테스트셋 성능 검증할 때)
+    # load_model = pickle.load(open(name, 'rb'))
+    # print(len(x_valid))
+    # print(x_valid)
+    # prediction = load_model.predict(x_valid)
+    #
+    # print('score : {}'.format(round(load_model.best_estimator_.score(x_valid, y_valid), 3)))
+    # print(confusion_matrix(y_valid, prediction))
+    # print(classification_report(y_valid, prediction))

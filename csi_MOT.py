@@ -66,7 +66,9 @@ csi_df.reset_index(drop=True, inplace=True)
 
 # ============= Using all subcarrier Ver. ==============
 from csi_ML_train import train_rf
-train_rf(csi_df)
+from csi_DL_train import deep_model
+#train_rf(csi_df)
+deep_model(csi_df)
 
 # ============= Subcarrier Choice Ver. =================
 # # Define number of features

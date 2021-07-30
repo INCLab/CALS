@@ -5,15 +5,14 @@ from sklearn.model_selection import train_test_split
 
 
 def deep_model(csi_df):
-    # Delete row index in dataframe
-    del csi_df['Unnamed: 0']
-    # del test_df['Unnamed: 0']
+    # Drop timestamp
+    csi_df.drop([csi_df.columns[0]], axis=1, inplace=True)
 
     # Min-Max Normalization
     scaler = MinMaxScaler()
-    scaler.fit(df.iloc[:, 0:100])
-    scaled_df = scaler.transform(df.iloc[:, 0:100])
-    df.iloc[:, 0:100] = scaled_df
+    scaler.fit(csi_df.iloc[:, 0:-1])
+    scaled_df = scaler.transform(csi_df.iloc[:, 0:-1])
+    csi_df.iloc[:, 0:-1] = scaled_df
 
     # # Min-Max Normalization for test data
     # scaler = MinMaxScaler()
@@ -28,9 +27,8 @@ def deep_model(csi_df):
     # test_feature = test_df.drop(columns=['label'])
     # test_target = test_df['label']
 
-
     # Split dataset
-    train_data, test_data = train_test_split(df, test_size=0.3)
+    train_data, test_data = train_test_split(csi_df, test_size=0.3)
 
     train_feature = train_data.drop(columns=['label'])
     train_target = tf.keras.utils.to_categorical(train_data['label'], num_classes=2)
@@ -41,7 +39,8 @@ def deep_model(csi_df):
     print(train_feature.shape)
     print(train_target.shape)
 
-    model = tf.keras.Sequential([tf.keras.layers.Dense(units=192, activation='relu', input_shape=(100,)),
+    input_ft = 64  # total subcarrier number
+    model = tf.keras.Sequential([tf.keras.layers.Dense(units=192, activation='relu', input_shape=(input_ft,)),
                                 tf.keras.layers.Dense(units=96, activation='relu'),
                                 tf.keras.layers.Dense(units=48, activation='relu'),
                                 tf.keras.layers.Dense(units=24, activation='relu'),
