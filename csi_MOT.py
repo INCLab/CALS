@@ -94,8 +94,3 @@ for sub_idx in range(0, len(csi_df.columns)):
 
     new_df = pd.DataFrame(subcarrier_array)
 
-    # Add label '1(one person)' column in dataframe
-    one_label = [1 for i in range(0, len(new_df))]
-    new_df['label'] = one_label
-    one_data_list.append(new_df)
-
