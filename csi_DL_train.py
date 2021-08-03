@@ -57,3 +57,11 @@ def deep_model(csi_df):
 
     print("Evaluation:")
     model.evaluate(test_feature, test_target)
+
+    # print("Save model")
+    # model.save('trained_dl_model')
+    #
+    # # Convert to TF Lite model
+    # converter = tf.lite.TFLiteConverter.from_saved_model('trained_dl_model')
+    # tflite_model = converter.convert()
+    # open("converted_model.tflite", "wb").write(tflite_model)
