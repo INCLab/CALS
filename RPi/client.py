@@ -1,4 +1,3 @@
-# Client
 import socket
 
 HOST = 'localhost'
@@ -29,5 +28,5 @@ def getFileFromServer(filename):
     print('Transport {0} done. Transferred data: {1}'.format(filename, data_transferred))
 
 
-filename = 'lite_model.tf'  # lite 파일 이름
+filename = '../converted_model.tflite'  # lite 파일 이름
 getFileFromServer(filename)
