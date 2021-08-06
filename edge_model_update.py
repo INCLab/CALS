@@ -1,8 +1,7 @@
-# Server
 import socketserver
 from os.path import exists
 
-HOST = '221.148.100.53'
+HOST = 'localhost'
 PORT = 9009
 
 
