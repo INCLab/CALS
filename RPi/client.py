@@ -1,4 +1,3 @@
-# Client
 import socket
 
 HOST = 'localhost'
@@ -30,4 +29,5 @@ def getFileFromServer(filename):
 
 
 filename = 'converted_model.tflite'  # lite 파일 이름
+
 getFileFromServer(filename)
