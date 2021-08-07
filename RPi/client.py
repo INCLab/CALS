@@ -1,6 +1,6 @@
 import socket
 
-HOST = 'localhost'
+HOST = '172.20.10.4'
 PORT = 9009
 
 
