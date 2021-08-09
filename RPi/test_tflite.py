@@ -1,8 +1,14 @@
+'''
+    Install tflite_runtime:
+    pip3 install https://dl.google.com/coral/python/tflite_runtime-2.1.0.post1-cp37-cp37m-linux_armv7l.whl
+'''
 import numpy as np
 import tensorflow as tf
+#import tflite_runtime.interpreter as tflite  # RPi4
 
 # Load the TFLite model and allocate tensors.
-interpreter = tf.lite.Interpreter(model_path="../converted_model.tflite")
+interpreter = tf.lite.Interpreter(model_path="converted_model.tflite")
+#interpreter = tflite.Interpreter(model_path="converted_model.tflite")  # RPi4
 interpreter.allocate_tensors()
 
 # Get input and output tensors.
