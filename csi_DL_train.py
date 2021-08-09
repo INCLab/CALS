@@ -2,6 +2,7 @@ import pandas as pd
 import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
+from tensorflow.keras.layers import Dense, Conv1D, Flatten
 
 
 def deep_model(csi_df):
@@ -40,12 +41,23 @@ def deep_model(csi_df):
     print(train_target.shape)
 
     input_ft = 64  # total subcarrier number
-    model = tf.keras.Sequential([tf.keras.layers.Dense(units=192, activation='relu', input_shape=(input_ft,)),
-                                tf.keras.layers.Dense(units=96, activation='relu'),
-                                tf.keras.layers.Dense(units=48, activation='relu'),
-                                tf.keras.layers.Dense(units=24, activation='relu'),
-                                tf.keras.layers.Dense(units=12, activation='relu'),
-                                tf.keras.layers.Dense(units=2, activation='sigmoid')])
+    model = tf.keras.Sequential([Dense(units=192, activation='relu', input_shape=(input_ft,)),
+                                Dense(units=96, activation='relu'),
+                                Dense(units=48, activation='relu'),
+                                Dense(units=24, activation='relu'),
+                                Dense(units=12, activation='relu'),
+                                Dense(units=2, activation='sigmoid')])
+
+    #-----------------------
+    # Conv1D model
+    # ---------------------
+
+    # model = tf.keras.Sequential()
+    # model.add(Conv1D(4, 3, activation='relu', input_shape=(input_ft,)))  # 4 kernel, size of kernel 3
+    # model.add(Flatten())  # 2D -> 1D
+    # model.add(Dense(unit=10, activation='relu'))
+    # model.add(Dense(unit=10, activation='relu'))
+    # model.add(Dense(unit=2, activation='softmax'))
 
     model.compile(optimizer=tf.keras.optimizers.Adam(lr=0.0001), loss='binary_crossentropy', metrics=['accuracy'])
     model.summary()
