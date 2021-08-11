@@ -1,17 +1,14 @@
-import importlib
 import pcap
 import dpkt
-import config
 import pandas as pd
 import numpy as np
-decoder = importlib.import_module(f'decoders.{config.decoder}') # This is also an import
+from database.tracking_db import tracking_db
+
+db = tracking_db()
 
 print('Start Sniifing... @ UDP, Port 5500')
 sniffer = pcap.pcap(name='wlan0', promisc=True, immediate=True, timeout_ms=50)
 sniffer.setfilter('udp and port 5500')
-
-def mac_addr(address):
-    return ':'.join('%02X' % dpkt.compat.compat_ord(b) for b in address)
 
 for ts, pkt in sniffer:
     eth = dpkt.ethernet.Ethernet(pkt)
@@ -40,7 +37,16 @@ for ts, pkt in sniffer:
     csi_df = pd.DataFrame(np.abs(csi_cmplx))
     csi_df.insert(0, 'time', ts)
     
+    # Rename Subcarriers Column Name
+    columns = {}
+    for i in range(0, 64):
+        columns[i] = '_' + str(i)
+
+    csi_df.rename(columns=columns, inplace=True)
+
+    # Save dataframe to SQL
     try:
-        csi_df.to_csv('outputs.csv')
-    except:
-        print('Fail to save data')
+        db.insert_csi(csi_df)
+        print('Saved')
+    except Exception as e:
+        print('Error', e)
