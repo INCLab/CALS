@@ -1,4 +1,5 @@
 from database.tracking_db import tracking_db
+from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
 
@@ -59,7 +60,7 @@ csi_df = db.get_csi_df()
 
 '''
     <csi_df>
-    Feature: 64 Subcarriers, Elements: Amplitude 
+    Feature: 64 Subcarriers(-32~32), Elements: Amplitude 
 '''
 csi_df['label'] = label_list
 
@@ -71,11 +72,28 @@ csi_df.reset_index(drop=True, inplace=True)
 # ============= Preprocessing ================
 
 '''
-    1. Normalization
-    2. Butterworth filter
+    1. Drop null subcarriers
+    2. Normalization 
 '''
+# Drop timestamp
+csi_df.drop([csi_df.columns[0]], axis=1, inplace=True)
 
-# ============= Using all subcarrier Ver. ==============
+# Drop null subcarriers
+# Indexes of Null and Pilot OFDM subcarriers
+# {-32, -31, -30, -29, 31, 30, 29, 0}
+null_idx = [-32, -31, -30, -29, 31, 30, 29, 0]
+null_idx = [idx for idx in str(null_idx + 32)]
+
+for idx in null_idx:
+    csi_df.drop(csi_df.columns[idx], axis=1, inplace=True)
+
+# 2. Normalization
+scaler = MinMaxScaler()
+scaler.fit(csi_df.iloc[:, 0:-1])
+scaled_df = scaler.transform(csi_df.iloc[:, 0:-1])
+csi_df.iloc[:, 0:-1] = scaled_df
+
+# ==========================================
 from csi_ML_train import train_rf
 from csi_DL_train import deep_model
 #train_rf(csi_df)
