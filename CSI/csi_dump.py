@@ -17,7 +17,7 @@ for ts, pkt in sniffer:
     eth = dpkt.ethernet.Ethernet(pkt)
     ip = eth.data 
     udp = ip.data
-    csi = udp.data
+    csi = udp.data[18:]
 
     bandwidth = ip.__hdr__[2][2]
     nsub = int(bandwidth * 3.2)
