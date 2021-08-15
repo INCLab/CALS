@@ -2,7 +2,7 @@ from database.tracking_db import tracking_db
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
-import PyWavelets
+import pywt
 
 # =========  CSI labeling  =========
 label = {}
@@ -85,10 +85,10 @@ csi_df.drop([csi_df.columns[0]], axis=1, inplace=True)
 # Indexes of Null and Pilot OFDM subcarriers
 # {-32, -31, -30, -29, 31, 30, 29, 0}
 null_idx = [-32, -31, -30, -29, 31, 30, 29, 0]
-null_idx = [idx for idx in str(null_idx + 32)]
+null_idx = ['_' + str(idx + 32) for idx in null_idx]
 
 for idx in null_idx:
-    csi_df.drop(csi_df.columns[idx], axis=1, inplace=True)
+    csi_df.drop(idx, axis=1, inplace=True)
 
 # 2. Denoising with DWT
 # pywt.dwt()
@@ -103,9 +103,8 @@ def lowpassfilter(signal, thresh=0.63, wavelet="db4"):
     return reconstructed_signal
 
 
-for sub_idx in csi_df.columns:
-    csi_df.columns[sub_idx] = lowpassfilter(np.abs(csi_df.columns[sub_idx]), 0.3)
-
+for sub_idx in csi_df.columns[:-1]:
+    csi_df[sub_idx] = lowpassfilter(np.abs(csi_df[sub_idx]), 0.3)
 
 # 3. Normalization
 scaler = MinMaxScaler()
@@ -113,13 +112,14 @@ scaler.fit(csi_df.iloc[:, 0:-1])
 scaled_df = scaler.transform(csi_df.iloc[:, 0:-1])
 csi_df.iloc[:, 0:-1] = scaled_df
 
-# 4. AST
 
-# ==========================================
-from csi_ML_train import train_rf
-from csi_DL_train import deep_model
-#train_rf(csi_df)
-deep_model(csi_df)
+# # 4. AST
+#
+# # ==========================================
+# from csi_ML_train import train_rf
+# from csi_DL_train import deep_model
+# #train_rf(csi_df)
+# deep_model(csi_df)
 
 
 
