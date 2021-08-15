@@ -74,7 +74,7 @@ csi_df.reset_index(drop=True, inplace=True)
 
 '''
     1. Drop null subcarriers
-    2. Denoising with DWT
+    2. Denoising with DWT(Discrete Wavelet Transform)
     3. Normalization
     4. extract dynamic moving feature with AST(Amplitude Shape Trend)
 '''
@@ -92,7 +92,19 @@ for idx in null_idx:
 
 # 2. Denoising with DWT
 # pywt.dwt()
-# https://hyongdoc.tistory.com/429
+# https://hyongdoc.tistory.com/429wanton
+
+
+def lowpassfilter(signal, thresh=0.63, wavelet="db4"):
+    thresh = thresh * np.nanmax(signal)
+    coeff = pywt.wavedec(signal, wavelet, mode="per", level=8)
+    coeff[1:] = (pywt.threshold(i, value=thresh, mode="soft") for i in coeff[1:])
+    reconstructed_signal = pywt.waverec(coeff, wavelet, mode="per")
+    return reconstructed_signal
+
+
+for sub_idx in csi_df.columns:
+    csi_df.columns[sub_idx] = lowpassfilter(np.abs(csi_df.columns[sub_idx]), 0.3)
 
 
 # 3. Normalization
