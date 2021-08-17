@@ -6,12 +6,11 @@ from database.tracking_db import tracking_db
 from multiprocessing import Process
 import os
 import time
-
-def sniffing():
+def sniffing(nicname):
     db = tracking_db()
 
-    print('Start Sniifing... @ UDP, Port 5500')
-    sniffer = pcap.pcap(name='wlan0', promisc=True, immediate=True, timeout_ms=50)
+    print('Start Sniifing... @', nicname, 'UDP, Port 5500')
+    sniffer = pcap.pcap(name=nicname, promisc=True, immediate=True, timeout_ms=50)
     sniffer.setfilter('udp and port 5500')
 
     for ts, pkt in sniffer:
@@ -58,22 +57,27 @@ def ping(nicname):
     print('Start Ping...')
 
     # Get Gateway IP
-    gwip = os.system("ip route | grep -w 'default via.*dev'" + nicname + "'| awk '{print $3}'")
+    gwipcmd = "ip route | grep -w 'default via.*dev " + nicname + "' | awk '{print $3}'"
+    gwip = os.popen(gwipcmd).read()
 
     # Send Ping
     while True:
         # Request 5 Times, Ping from specified NIC to gateway
-        os.system('ping -c 5 -l' + nicname + ' ' + gwip)
+        pingcmd = 'ping -q -c 5 -I ' + nicname + ' ' + gwip + ' 1> /dev/null'
+        os.system(pingcmd)
 
         # Sleep
         time.sleep(1)
 
 if __name__ == '__main__':
-    # Ping dedicated interface
-    nicname = 'wlan1'
+    # CSI Extractor Interface
+    csinicname = 'wlan1'
 
-    sniffing = Process(target=sniffing())
-    ping = Process(target=ping(nicname))
+    # Ping dedicated interface
+    pingnicname = 'wlan0'
+
+    sniffing = Process(target=sniffing, args=(csinicname, ))
+    ping = Process(target=ping, args=(pingnicname, ))
 
     sniffing.start()
     ping.start()
