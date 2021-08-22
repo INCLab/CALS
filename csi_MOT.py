@@ -73,6 +73,7 @@ csi_df.reset_index(drop=True, inplace=True)
 # ============= Preprocessing ================
 
 '''
+    0. Set time window
     1. Drop null subcarriers
     2. Denoising with DWT(Discrete Wavelet Transform)
     3. Normalization
@@ -80,6 +81,15 @@ csi_df.reset_index(drop=True, inplace=True)
 '''
 # Drop timestamp
 csi_df.drop([csi_df.columns[0]], axis=1, inplace=True)
+
+# 0. Set time window (n second)
+packets_ps = 100  # packets per second
+n_second = 3
+time_window =  packets_ps * n_second
+tw_list = []  # time window list
+
+# Todo: time window 내에서 label이 바뀌는경우에 대한 전처리를 어떻게 할것인지,
+
 
 # 1. Drop null subcarriers
 # Indexes of Null and Pilot OFDM subcarriers
