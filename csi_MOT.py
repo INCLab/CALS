@@ -89,6 +89,8 @@ time_window =  packets_ps * n_second
 tw_list = []  # time window list
 
 # Todo: time window 내에서 label이 바뀌는경우에 대한 전처리를 어떻게 할것인지,
+# solution: FairMOT result와 csi sync 과정에서 FairMOT label에 따라서
+# sync 데이터 따로 만들기. 이때 time window에 포함되는 csi data가 label이 통일 되지 않는경우 drop
 
 
 # 1. Drop null subcarriers
