@@ -1,20 +1,10 @@
 import pandas as pd
 import tensorflow as tf
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Dense, Conv1D, Flatten
 
 
 def deep_model(csi_df):
-    # Drop timestamp
-    csi_df.drop([csi_df.columns[0]], axis=1, inplace=True)
-
-    # Min-Max Normalization
-    scaler = MinMaxScaler()
-    scaler.fit(csi_df.iloc[:, 0:-1])
-    scaled_df = scaler.transform(csi_df.iloc[:, 0:-1])
-    csi_df.iloc[:, 0:-1] = scaled_df
-
     # # Min-Max Normalization for test data
     # scaler = MinMaxScaler()
     # scaler.fit(test_df.iloc[:, 0:100])

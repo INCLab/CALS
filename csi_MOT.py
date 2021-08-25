@@ -1,6 +1,8 @@
 from database.tracking_db import tracking_db
+from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
+import pywt
 
 # =========  CSI labeling  =========
 label = {}
@@ -59,7 +61,7 @@ csi_df = db.get_csi_df()
 
 '''
     <csi_df>
-    Feature: 64 Subcarriers, Elements: Amplitude 
+    Feature: 64 Subcarriers(-32~32), Elements: Amplitude 
 '''
 csi_df['label'] = label_list
 
@@ -71,15 +73,65 @@ csi_df.reset_index(drop=True, inplace=True)
 # ============= Preprocessing ================
 
 '''
-    1. Normalization
-    2. Butterworth filter
+    0. Set time window
+    1. Drop null subcarriers
+    2. Denoising with DWT(Discrete Wavelet Transform)
+    3. Normalization
+    4. extract dynamic moving feature with AST(Amplitude Shape Trend)
 '''
+# Drop timestamp
+csi_df.drop([csi_df.columns[0]], axis=1, inplace=True)
 
-# ============= Using all subcarrier Ver. ==============
-from csi_ML_train import train_rf
-from csi_DL_train import deep_model
-#train_rf(csi_df)
-deep_model(csi_df)
+# 0. Set time window (n second)
+packets_ps = 100  # packets per second
+n_second = 3
+time_window =  packets_ps * n_second
+tw_list = []  # time window list
+
+# Todo: time window 내에서 label이 바뀌는경우에 대한 전처리를 어떻게 할것인지,
+# solution: FairMOT result와 csi sync 과정에서 FairMOT label에 따라서
+# sync 데이터 따로 만들기. 이때 time window에 포함되는 csi data가 label이 통일 되지 않는경우 drop
+
+
+# 1. Drop null subcarriers
+# Indexes of Null and Pilot OFDM subcarriers
+# {-32, -31, -30, -29, 31, 30, 29, 0}
+null_idx = [-32, -31, -30, -29, 31, 30, 29, 0]
+null_idx = ['_' + str(idx + 32) for idx in null_idx]
+
+for idx in null_idx:
+    csi_df.drop(idx, axis=1, inplace=True)
+
+# 2. Denoising with DWT
+# pywt.dwt()
+# https://hyongdoc.tistory.com/429wanton
+
+
+def lowpassfilter(signal, thresh=0.63, wavelet="db4"):
+    thresh = thresh * np.nanmax(signal)
+    coeff = pywt.wavedec(signal, wavelet, mode="per", level=8)
+    coeff[1:] = (pywt.threshold(i, value=thresh, mode="soft") for i in coeff[1:])
+    reconstructed_signal = pywt.waverec(coeff, wavelet, mode="per")
+    return reconstructed_signal
+
+
+for sub_idx in csi_df.columns[:-1]:
+    csi_df[sub_idx] = lowpassfilter(np.abs(csi_df[sub_idx]), 0.3)
+
+# 3. Normalization
+scaler = MinMaxScaler()
+scaler.fit(csi_df.iloc[:, 0:-1])
+scaled_df = scaler.transform(csi_df.iloc[:, 0:-1])
+csi_df.iloc[:, 0:-1] = scaled_df
+
+
+# # 4. AST
+#
+# # ==========================================
+# from csi_ML_train import train_rf
+# from csi_DL_train import deep_model
+# #train_rf(csi_df)
+# deep_model(csi_df)
 
 
 
