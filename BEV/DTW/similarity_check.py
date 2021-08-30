@@ -94,18 +94,63 @@ for df in result1_df_list:
 for df in result2_df_list:
     result2_info_list.append(create_dist_list(df))
 
-print(dtw.dtw(result0_info_list[0][2], result1_info_list[0][2], keep_internals=True).distance)
+
+def check_similarity(info, info_list1, info_list2):
+
+    min1 = 999999
+    idx1 = -1
+
+    min2 = 999999
+    idx2 = -1
+
+    for k in info_list1:
+        if info[0][0] < 150 and k[0][0] < 150:
+            dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
+            print(dist)
+            if min1 > dist:
+                min1 = dist
+                idx1 = k[1]
+        elif info[0][0] < 150 and k[0][0] > 150:
+            break
+        elif info[0][0] > 150 and k[0][0] < 150:
+            continue
+        else:
+            dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
+            if min1 > dist:
+                min1 = dist
+                idx1 = k[1]
+
+    for k in info_list2:
+        if info[0][0] < 150 and k[0][0] < 150:
+            dist = dtw.dtw(k[0][2], info[2], keep_internals=True).distance
+            if min2 > dist:
+                min2 = dist
+                idx2 = k[1]
+        elif info[0][0] < 150 and k[0][0] > 150:
+            break
+        elif info[0][0] > 150 and k[0][0] < 150:
+            continue
+        else:
+            dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
+            if min2 > dist:
+                min2 = dist
+                idx2 = k[1]
+
+    return idx1, idx2
+
+id_map_list = []
+for info in result0_info_list:
+    id_map = [info[1]]
+    idx1, idx2 = check_similarity(info, result1_info_list, result2_info_list)
+    if idx1 != -1:
+        id_map.append(idx1)
+    if idx2 != -1:
+        id_map.append(idx2)
+    id_map_list.append(id_map)
+
+print(id_map_list)
 
 
-# def check_similarity(info, info_list1, info_list2):
-#     threshold = 5  # 5 frame
-#
-#     info1 = []
-#     dist = 999999
-#     for k in info_list1:
-#         # compare start frame
-#         if abs(info[0][0] - k[0][0]) < threshold:
 
 
-
-
+#global_idx = 1000  # start
