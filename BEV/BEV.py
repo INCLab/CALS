@@ -103,6 +103,20 @@ for frames in range(1, int(globals()['frame{}'.format(0)])):
         src = os.path.join(output_path, str(frames) + '.jpg')
         cv2.imwrite(src, map)
 
+# Create BEV_Result txt files
+# total_txt_num = 3
+#
+# for i in range(total_txt_num):
+#     with open('BEV_result{}.txt'.format(i), 'w') as f:
+#         for key in globals()['BEV_Point{}'.format(i)]:
+#             for info in globals()['BEV_Point{}'.format(i)][key]:
+#                 temp = ''
+#                 for e in info:
+#                     temp += str(e) + ' '
+#                 temp.rstrip()
+#                 f.write(str(key) + ' ' + temp.rstrip() + '\n')
+
+
 # heatmap
 
 import pandas as pd
