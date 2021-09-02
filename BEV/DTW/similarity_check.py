@@ -3,7 +3,7 @@ import math
 import numpy as np
 import dtw
 
-txt_name = ['result0', 'result1', 'result2']
+txt_name = ['BEV_result0', 'BEV_result1', 'BEV_result2']
 
 
 def make_df_list(txt_name):
@@ -28,12 +28,12 @@ def make_df_list(txt_name):
         3. id 5 제거
     '''
 
-    if txt_name == 'result0':
+    if txt_name == 'BEV_result0':
         result['id'][(result['id'] == 16)] = 10
         result['id'][(result['id'] == 23)] = 10
         result.drop(result[result['id'] == 40].index, inplace=True)
         result.drop(result[result['id'] == 42].index, inplace=True)
-    elif txt_name == 'result1':
+    elif txt_name == 'BEV_result1':
         result['id'][(result['id'] == 24)] = 9
         result['id'][(result['id'] == 33)] = 9
         result['id'][(result['id'] == 13)] = 14
@@ -42,7 +42,7 @@ def make_df_list(txt_name):
         result['id'][(result['id'] == 32)] = 17
         result['id'][(result['id'] == 43)] = 17
         result.drop(result[result['id'] == 41].index, inplace=True)
-    elif txt_name == 'result2':
+    elif txt_name == 'BEV_result2':
         result['id'][(result['id'] == 26)] = 12
         result['id'][(result['id'] == 34)] = 20
         result.drop(result[result['id'] == 5].index, inplace=True)
@@ -67,13 +67,22 @@ def create_dist_list(df):
     y_list = df['y'].to_list()
 
     # [[fist_frame, last_frame], id, [dist_list]]
-    info_list = [[frame_list[0], frame_list[-1]], id, []]
+    info_list = [[frame_list[0], frame_list[-1]], id]
+    unit_vec_list = []
 
-    # calculate Euclidean distance
+    # calculate unit vector
     for i in range(0, len(x_list) - 1):
-        dist = math.sqrt((x_list[i + 1] - x_list[i]) ** 2 + (y_list[i + 1] - y_list[i]) ** 2)
-        info_list[2].append(dist)
+        vec = np.array([x_list[i + 1] - x_list[i], y_list[i + 1] - y_list[i]])
 
+        # For divide by 0
+        if np.linalg.norm(vec) == 0:
+            unit_vec = vec
+        else:
+            unit_vec = vec / np.linalg.norm(vec)
+        unit_vec_list.append(unit_vec)
+
+    unit_vec_list = np.array(unit_vec_list)
+    info_list.append(unit_vec_list)
     return info_list
 
 
