@@ -60,7 +60,7 @@ def make_df_list(txt_name):
     return df_list
 
 
-def create_dist_list(df):
+def create_unit_vec(df):
     frame_list = df['frame'].to_list()
     id = df['id'].iloc[0]
     x_list = df['x'].to_list()
@@ -95,13 +95,13 @@ result1_info_list = []
 result2_info_list = []
 
 for df in result0_df_list:
-    result0_info_list.append(create_dist_list(df))
+    result0_info_list.append(create_unit_vec(df))
 
 for df in result1_df_list:
-    result1_info_list.append(create_dist_list(df))
+    result1_info_list.append(create_unit_vec(df))
 
 for df in result2_df_list:
-    result2_info_list.append(create_dist_list(df))
+    result2_info_list.append(create_unit_vec(df))
 
 
 def check_similarity(info, info_list1, info_list2):
