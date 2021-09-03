@@ -1,5 +1,4 @@
 import pandas as pd
-import math
 import numpy as np
 import dtw
 
@@ -60,6 +59,9 @@ def make_df_list(txt_name):
     return df_list
 
 
+'''
+    Create Feature for DTW 
+'''
 def create_unit_vec(df):
     frame_list = df['frame'].to_list()
     id = df['id'].iloc[0]
@@ -86,80 +88,57 @@ def create_unit_vec(df):
     return info_list
 
 
-result0_df_list = make_df_list(txt_name[0])
-result1_df_list = make_df_list(txt_name[1])
-result2_df_list = make_df_list(txt_name[2])
+def check_similarity(info, info_list):
 
-result0_info_list = []
-result1_info_list = []
-result2_info_list = []
+    idx = [-1] * len(info_list)
 
-for df in result0_df_list:
-    result0_info_list.append(create_unit_vec(df))
+    for i in range(len(info_list)):
+        min = 999999
+        for k in info_list[i]:
+            if info[0][0] < 150 and k[0][0] < 150:
+                dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
+                print(dist)
+                if min > dist:
+                    min = dist
+                    idx[i] = k[1]
+            elif info[0][0] < 150 and k[0][0] > 150:
+                break
+            elif info[0][0] > 150 and k[0][0] < 150:
+                continue
+            else:
+                dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
+                if min > dist:
+                    min = dist
+                    idx[i] = k[1]
 
-for df in result1_df_list:
-    result1_info_list.append(create_unit_vec(df))
-
-for df in result2_df_list:
-    result2_info_list.append(create_unit_vec(df))
+    return idx
 
 
-def check_similarity(info, info_list1, info_list2):
+# Create Dataframes by id
+result_df_list = []
+for name in txt_name:
+    result_df_list.append(make_df_list(name))
 
-    min1 = 999999
-    idx1 = -1
+# Create id info list
+result_info_list = []
+for df_list in result_df_list:
+    info = []
+    for df in df_list:
+        info.append(create_unit_vec(df))
+    result_info_list.append(info)
 
-    min2 = 999999
-    idx2 = -1
-
-    for k in info_list1:
-        if info[0][0] < 150 and k[0][0] < 150:
-            dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
-            print(dist)
-            if min1 > dist:
-                min1 = dist
-                idx1 = k[1]
-        elif info[0][0] < 150 and k[0][0] > 150:
-            break
-        elif info[0][0] > 150 and k[0][0] < 150:
-            continue
-        else:
-            dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
-            if min1 > dist:
-                min1 = dist
-                idx1 = k[1]
-
-    for k in info_list2:
-        if info[0][0] < 150 and k[0][0] < 150:
-            dist = dtw.dtw(k[0][2], info[2], keep_internals=True).distance
-            if min2 > dist:
-                min2 = dist
-                idx2 = k[1]
-        elif info[0][0] < 150 and k[0][0] > 150:
-            break
-        elif info[0][0] > 150 and k[0][0] < 150:
-            continue
-        else:
-            dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
-            if min2 > dist:
-                min2 = dist
-                idx2 = k[1]
-
-    return idx1, idx2
-
+# Create high similarity ID list
 id_map_list = []
-for info in result0_info_list:
+for info in result_info_list[0]:
     id_map = [info[1]]
-    idx1, idx2 = check_similarity(info, result1_info_list, result2_info_list)
-    if idx1 != -1:
-        id_map.append(idx1)
-    if idx2 != -1:
-        id_map.append(idx2)
+    idx_list = check_similarity(info, result_info_list[1:])
+
+    for idx in idx_list:
+        if idx != -1:
+            id_map.append(idx)
     id_map_list.append(id_map)
 
 print(id_map_list)
-
-
 
 
 #global_idx = 1000  # start
