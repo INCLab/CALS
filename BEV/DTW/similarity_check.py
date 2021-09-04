@@ -57,7 +57,12 @@ def make_df_list(txt_name):
         df = result[result['id'] == id]
         df_list.append(df)
 
-    return df_list
+    result_list = []
+
+    for df in df_list:
+        result_list += divide_df(df)
+
+    return result_list
 
 
 # If dataframe is spaced more than threshold, divide it
@@ -109,8 +114,8 @@ def create_unit_vec(df):
     x_list = df['x'].to_list()
     y_list = df['y'].to_list()
 
-    # [[fist_frame, last_frame], id, [dist_list]]
-    info_list = [[frame_list[0], frame_list[-1]], id]
+    # return form : [frame_list[:-1], id, [dist_list]]
+    info_list = [frame_list[:-1], id]
     unit_vec_list = []
 
     # calculate unit vector
@@ -126,16 +131,21 @@ def create_unit_vec(df):
 
     unit_vec_list = np.array(unit_vec_list)
     info_list.append(unit_vec_list)
+
     return info_list
 
 
 def check_similarity(info, info_list):
 
+    # Max mapping id is number of camera results(== len(info_list))
     idx = [-1] * len(info_list)
 
+    # Loop for each result file
     for i in range(len(info_list)):
         min = 999999
         for k in info_list[i]:
+            # ToDo: 연속된 frame 별로 df를 나눴는데, 적절한 방법으로 서로 비교해야함
+            # Compare start frame
             if info[0][0] < 150 and k[0][0] < 150:
                 dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
                 print(dist)
@@ -182,11 +192,3 @@ for info in result_info_list[0]:
 print(id_map_list)
 
 #global_idx = 1000  # start
-
-a = []
-for i in range(len(result_df_list[2][0])):
-    a.append(result_df_list[2][0].iloc[i].to_list())
-
-for i in a:
-    print(i[0])
-
