@@ -3,6 +3,7 @@ import numpy as np
 import dtw
 
 txt_name = ['BEV_result0', 'BEV_result1', 'BEV_result2']
+FRAME_THRESHOLD = 40
 
 
 def make_df_list(txt_name):
@@ -59,9 +60,49 @@ def make_df_list(txt_name):
     return df_list
 
 
-'''
-    Create Feature for DTW 
-'''
+# If dataframe is spaced more than threshold, divide it
+def divide_df(dataframe, frame_threshold=FRAME_THRESHOLD):
+    list_by_row = []
+    div_idx_list = []
+
+    for i in range(len(dataframe)):
+        list_by_row.append(dataframe.iloc[i].to_list())
+
+    # Check frame interval
+    for j in range(1, len(list_by_row)):
+        if frame_threshold < list_by_row[j][0] - list_by_row[j-1][0]:  # frame interval
+            div_idx_list.append(j)
+
+    # If elements in div_idx_list are consecutive, it means front div point consist dataframe ifself.
+    # So, discard front point
+    if len(div_idx_list) > 1:
+        for k in range(len(div_idx_list)-1):
+            if div_idx_list[k] + 1 == div_idx_list[k + 1]:
+                div_idx_list[k] = -1
+
+    remove_idx = {-1}
+    div_idx = [i for i in div_idx_list if i not in remove_idx]
+
+    # Divide dataframe
+    df_list = []
+    if div_idx:
+        for i in range(len(div_idx)):
+            if i == 0:
+                df_list.append(list_by_row[:div_idx[i]])
+            else:
+                df_list.append(list_by_row[div_idx[i-1]:div_idx[i]])
+        df_list.append(list_by_row[div_idx[-1]:])
+    else:
+        df_list.append(list_by_row)
+
+    result_df = []
+    for rows in df_list:
+        result_df.append(pd.DataFrame(rows, columns=['frame', 'id', 'x', 'y']))
+
+    return result_df
+
+
+# Create Feature for DTW
 def create_unit_vec(df):
     frame_list = df['frame'].to_list()
     id = df['id'].iloc[0]
@@ -140,5 +181,12 @@ for info in result_info_list[0]:
 
 print(id_map_list)
 
-
 #global_idx = 1000  # start
+
+a = []
+for i in range(len(result_df_list[2][0])):
+    a.append(result_df_list[2][0].iloc[i].to_list())
+
+for i in a:
+    print(i[0])
+
