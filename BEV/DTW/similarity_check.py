@@ -142,37 +142,33 @@ def check_similarity(info, info_list):
 
     # Loop for each result file
     for i in range(len(info_list)):
+
         min = 999999
+
         for k in info_list[i]:
             # ToDo: 연속된 frame 별로 df를 나눴는데, 적절한 방법으로 서로 비교해야함
             # 1. 겹치지 않는경우: 일단 제외한다
             if info[0][0] > k[0][-1] or info[0][-1] < k[0][0]:
                 continue
-            # 2. 포함하는 경우
+            # 2. 포함하는 경우 : DTW로 유사도 측정
             elif (info[0][0] < k[0][0] and info[0][-1] > k[0][-1]) or (info[0][0] > k[0][0] and info[0][-1] < k[0][-1]):
-
-            # 3. 절반이상 겹치는 경우
-            
-            # 4. 절반이하로 겹치는 경우
-
-
-            # ===== 기존 방법 =======
-            # Compare start frame
-            if info[0][0] < 150 and k[0][0] < 150:
                 dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
                 print(dist)
                 if min > dist:
                     min = dist
                     idx[i] = k[1]
-            elif info[0][0] < 150 and k[0][0] > 150:
-                break
-            elif info[0][0] > 150 and k[0][0] < 150:
-                continue
-            else:
+            # 3. 절반이상 겹치는 경우 : DTW로 유사도 측정
+            elif (info[0][0] > k[0][0] and info[0][int(len(info[0]) / 2)] <= k[0][-1] <= info[0][-1]) or (
+                    info[0][0] < k[0][0] and k[0][int(len(k[0]) / 2)] <= info[0][-1] <= k[0][-1]):
                 dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
+                print(dist)
                 if min > dist:
                     min = dist
                     idx[i] = k[1]
+            # 4. 절반이하로 겹치는 경우: 제외
+            elif (info[0][0] > k[0][0] and info[0][int(len(info[0]) / 2)] > k[0][-1]) or (
+                    info[0][0] < k[0][0] and k[0][int(len(k[0]) / 2)] > info[0][-1]):
+                continue
 
     return idx
 
