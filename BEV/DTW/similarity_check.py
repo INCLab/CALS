@@ -245,3 +245,4 @@ for info in result_info_list[0]:
             dist_dict[num] += result_dist_list[num]
 
 id_mapping(dist_dict, id_map_list)
+print(id_map_list)
