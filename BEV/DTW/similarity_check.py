@@ -5,6 +5,9 @@ import dtw
 txt_name = ['BEV_result0', 'BEV_result1', 'BEV_result2']
 FRAME_THRESHOLD = 40
 
+# 정익:2,6,9,10,12  민재:1,8,11,14,18  찬영:3,4,17,19,20
+GT = [[1, 8, 11, 14, 18], [2, 6, 9, 10, 12], [3, 4, 17, 19, 20]]  # Ground Truth
+
 
 def make_df_list(txt_name):
     result = pd.read_csv('../temp/' + txt_name + '.txt', delimiter=' ', header=None)
@@ -75,13 +78,13 @@ def divide_df(dataframe, frame_threshold=FRAME_THRESHOLD):
 
     # Check frame interval
     for j in range(1, len(list_by_row)):
-        if frame_threshold < list_by_row[j][0] - list_by_row[j-1][0]:  # frame interval
+        if frame_threshold < list_by_row[j][0] - list_by_row[j - 1][0]:  # frame interval
             div_idx_list.append(j)
 
     # If elements in div_idx_list are consecutive, it means front div point consist dataframe ifself.
     # So, discard front point
     if len(div_idx_list) > 1:
-        for k in range(len(div_idx_list)-1):
+        for k in range(len(div_idx_list) - 1):
             if div_idx_list[k] + 1 == div_idx_list[k + 1]:
                 div_idx_list[k] = -1
 
@@ -95,7 +98,7 @@ def divide_df(dataframe, frame_threshold=FRAME_THRESHOLD):
             if i == 0:
                 df_list.append(list_by_row[:div_idx[i]])
             else:
-                df_list.append(list_by_row[div_idx[i-1]:div_idx[i]])
+                df_list.append(list_by_row[div_idx[i - 1]:div_idx[i]])
         df_list.append(list_by_row[div_idx[-1]:])
     else:
         df_list.append(list_by_row)
@@ -135,42 +138,79 @@ def create_unit_vec(df):
     return info_list
 
 
+# ToDO: 유사도 비교에 대한 모든 경우의 수 리스트를 return 해야함, arg를 단일 df로 받으면 안됨
 def check_similarity(info, info_list):
+    '''
+        기준 아이디에 대해 다른 result 파일에서 나온 모든 아이디들과 케이스별로 유사도 측정(혹은 제외) 후,
+        DTW distance를 모두 저장한 뒤에 마지막에 가장 낮은 distance 값을 갖는 id쌍 부터 차례대로 mapping하며
+        나머지는 지움
+    '''
 
-    # Max mapping id is number of camera results(== len(info_list))
-    idx = [-1] * len(info_list)
+    # result_list: [result0_dist_list: [[compare_id, compared_id, DTW_dist], ...], result1_dist_list: , ...]
+    # length of result_list: camera result files - 1
+    result_list = []
 
     # Loop for each result file
     for i in range(len(info_list)):
-
-        min = 999999
-
+        dist_list = []
         for k in info_list[i]:
-            # ToDo: 연속된 frame 별로 df를 나눴는데, 적절한 방법으로 서로 비교해야함
+
             # 1. 겹치지 않는경우: 일단 제외한다
             if info[0][0] > k[0][-1] or info[0][-1] < k[0][0]:
                 continue
+
             # 2. 포함하는 경우 : DTW로 유사도 측정
             elif (info[0][0] < k[0][0] and info[0][-1] > k[0][-1]) or (info[0][0] > k[0][0] and info[0][-1] < k[0][-1]):
                 dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
-                print(dist)
-                if min > dist:
-                    min = dist
-                    idx[i] = k[1]
+                dist_list.append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+
             # 3. 절반이상 겹치는 경우 : DTW로 유사도 측정
             elif (info[0][0] > k[0][0] and info[0][int(len(info[0]) / 2)] <= k[0][-1] <= info[0][-1]) or (
                     info[0][0] < k[0][0] and k[0][int(len(k[0]) / 2)] <= info[0][-1] <= k[0][-1]):
                 dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
-                print(dist)
-                if min > dist:
-                    min = dist
-                    idx[i] = k[1]
+                dist_list.append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+
             # 4. 절반이하로 겹치는 경우: 제외
             elif (info[0][0] > k[0][0] and info[0][int(len(info[0]) / 2)] > k[0][-1]) or (
                     info[0][0] < k[0][0] and k[0][int(len(k[0]) / 2)] > info[0][-1]):
                 continue
 
-    return idx
+        result_list.append(dist_list)
+
+    return result_list
+
+
+def id_mapping(dist_dictionary, mapping_list):
+    keys = list(dist_dictionary.keys())
+
+    for key in keys:
+        sorted_list = sorted(dist_dictionary[key], key=lambda x: (x[2], x[0]))
+
+        while sorted_list:
+            compare_id = sorted_list[0][0]
+            compared_id = sorted_list[0][1]
+
+            check = 0
+            for ids in mapping_list:
+                if compare_id in ids:
+                    if compared_id not in ids:
+                        ids.append(compared_id)
+                    check = 1
+                    break
+                if compared_id in ids:
+                    if compare_id not in ids:
+                        ids.append(compare_id)
+                    check = 1
+                    break
+
+            if check == 0:
+                mapping_list.append([compare_id, compared_id])
+
+            # Delete duplicate id list
+            sorted_list = [i for i in sorted_list if not compare_id in i]
+            sorted_list = [i for i in sorted_list if not compared_id in i]
+
+    return
 
 
 # Create Dataframes by id
@@ -188,15 +228,20 @@ for df_list in result_df_list:
 
 # Create high similarity ID list
 id_map_list = []
+
+# dist_dict.keys : result.txt file number
+dist_dict = dict()
+
+# initialize
+for i in range(0, len(result_info_list) - 1):
+    dist_dict[i] = []
+
+
 for info in result_info_list[0]:
-    id_map = [info[1]]
-    idx_list = check_similarity(info, result_info_list[1:])
+    result_dist_list = check_similarity(info, result_info_list[1:])
 
-    for idx in idx_list:
-        if idx != -1:
-            id_map.append(idx)
-    id_map_list.append(id_map)
+    for num in range(0, len(result_dist_list)):
+        if result_dist_list[num]:
+            dist_dict[num] += result_dist_list[num]
 
-print(id_map_list)
-
-#global_idx = 1000  # start
+id_mapping(dist_dict, id_map_list)
