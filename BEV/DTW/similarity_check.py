@@ -7,7 +7,7 @@ txt_name = ['BEV_result0', 'BEV_result1', 'BEV_result2']
 FRAME_THRESHOLD = 40
 
 # 정익:2,6,9,10,12  민재:1,8,11,14,18  찬영:3,4,17,19,20
-GT = [[1, 8, 11, 14, 18], [2, 6, 9, 10, 12], [3, 4, 17, 19, 20]]  # Ground Truth
+GT = [[1, 8], [11, 14, 18], [2, 6], [9, 10, 12], [3, 4], [17, 19, 20]]  # Ground Truth
 
 
 def make_df_list(filename):
@@ -155,27 +155,132 @@ def check_similarity(info_list, compare_list):
         for i in range(0, len(compare_list)):
             for k in compare_list[i]:
 
-                # 1. 겹치지 않는경우: 일단 제외한다
+                # *** 겹치지 않는경우: 일단 제외한다
                 if info[0][0] > k[0][-1] or info[0][-1] < k[0][0]:
                     continue
 
-                # 2. 포함하는 경우 : DTW로 유사도 측정
-                elif (info[0][0] < k[0][0] and info[0][-1] > k[0][-1]) or (info[0][0] > k[0][0] and info[0][-1] < k[0][-1]):
-                    dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
+                # *** 포함하는 경우 : DTW로 유사도 측정
+                # case 1
+                elif info[0][0] < k[0][0] and info[0][-1] > k[0][-1]:
+                    dist = dtw_overlap_frames(info, k, 1)
+                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+                # case 2
+                elif info[0][0] > k[0][0] and info[0][-1] < k[0][-1]:
+                    dist = dtw_overlap_frames(info, k, 2)
                     result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
 
-                # 3. 절반이상 겹치는 경우 : DTW로 유사도 측정
-                elif (info[0][0] > k[0][0] and info[0][int(len(info[0]) / 2)] <= k[0][-1] <= info[0][-1]) or (
-                        info[0][0] < k[0][0] and k[0][int(len(k[0]) / 2)] <= info[0][-1] <= k[0][-1]):
-                    dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
+                # *** 절반이상 겹치는 경우 : DTW로 유사도 측정
+                # case 3
+                elif info[0][0] > k[0][0] and info[0][int(len(info[0]) / 2)] <= k[0][-1] <= info[0][-1]:
+                    dist = dtw_overlap_frames(info, k, 3)
+                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+                # case 4
+                elif info[0][0] < k[0][0] and k[0][int(len(k[0]) / 2)] <= info[0][-1] <= k[0][-1]:
+                    dist = dtw_overlap_frames(info, k, 4)
                     result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
 
-                # 4. 절반이하로 겹치는 경우: 제외
-                elif (info[0][0] > k[0][0] and info[0][int(len(info[0]) / 2)] > k[0][-1]) or (
-                        info[0][0] < k[0][0] and k[0][int(len(k[0]) / 2)] > info[0][-1]):
-                    continue
+                # *** 절반이하로 겹치는 경우: 제외?(포함하려면 위 코드와 합치기)
+                elif k[0][0] < info[0][0] < k[0][-1] < info[0][int(len(info[0]) / 2)]:
+                    dist = dtw_overlap_frames(info, k, 3)
+                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+                elif info[0][0] < k[0][0] < info[0][-1] < k[0][int(len(k[0]) / 2)]:
+                    dist = dtw_overlap_frames(info, k, 4)
+                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
 
     return result_list
+
+
+'''
+    이동경로를 비교할때 overlap 되는 frame에 해당하는 feature들만 골라서 DTW 적용 
+'''
+def dtw_overlap_frames(x_id_info, y_id_info, case):
+    dist = -1
+    x_frame_list = x_id_info[0]
+    y_frame_list = y_id_info[0]
+
+    x_vec_list = x_id_info[2]
+    y_vec_list = y_id_info[2]
+
+    start_idx = 0
+    end_idx = 0
+
+    if case == 1:
+        try:
+            start_idx = x_frame_list.index(y_frame_list[0])
+        except:
+            min = 99999
+            for i in range(0, len(x_frame_list)):
+                if abs(x_frame_list[i] - y_frame_list[0]) < min:
+                    min = abs(x_frame_list[i] - y_frame_list[0])
+                    start_idx = i
+        try:
+            end_idx = x_frame_list.index(y_frame_list[-1])
+        except:
+            min = 99999
+            for i in range(0, len(x_frame_list)):
+                if abs(x_frame_list[i] - y_frame_list[-1]) < min:
+                    min = abs(x_frame_list[i] - y_frame_list[-1])
+                    end_idx = i
+        dist = dtw.dtw(x_vec_list[start_idx:end_idx + 1], y_vec_list, keep_internals=True).distance
+
+    elif case == 2:
+        try:
+            start_idx = y_frame_list.index(x_frame_list[0])
+        except:
+            min = 99999
+            for i in range(0, len(y_frame_list)):
+                if abs(y_frame_list[i] - x_frame_list[0]) < min:
+                    min = abs(y_frame_list[i] - x_frame_list[0])
+                    start_idx = i
+        try:
+            end_idx = y_frame_list.index(x_frame_list[-1])
+        except:
+            min = 99999
+            for i in range(0, len(y_frame_list)):
+                if abs(y_frame_list[i] - x_frame_list[-1]) < min:
+                    min = abs(y_frame_list[i] - x_frame_list[-1])
+                    end_idx = i
+        dist = dtw.dtw(x_vec_list, y_vec_list[start_idx:end_idx + 1], keep_internals=True).distance
+
+    elif case == 3:
+        try:
+            start_idx = y_frame_list.index(x_frame_list[0])
+        except:
+            min = 99999
+            for i in range(0, len(y_frame_list)):
+                if abs(y_frame_list[i] - x_frame_list[0]) < min:
+                    min = abs(y_frame_list[i] - x_frame_list[0])
+                    start_idx = i
+        try:
+            end_idx = x_frame_list.index(y_frame_list[-1])
+        except:
+            min = 99999
+            for i in range(0, len(x_frame_list)):
+                if abs(x_frame_list[i] - y_frame_list[-1]) < min:
+                    min = abs(x_frame_list[i] - y_frame_list[-1])
+                    end_idx = i
+        dist = dtw.dtw(x_vec_list[:end_idx], y_vec_list[start_idx:], keep_internals=True).distance
+
+    elif case == 4:
+        try:
+            start_idx = x_frame_list.index(y_frame_list[0])
+        except:
+            min = 99999
+            for i in range(0, len(x_frame_list)):
+                if abs(x_frame_list[i] - y_frame_list[0]) < min:
+                    min = abs(x_frame_list[i] - y_frame_list[0])
+                    start_idx = i
+        try:
+            end_idx = y_frame_list.index(x_frame_list[-1])
+        except:
+            min = 99999
+            for i in range(0, len(y_frame_list)):
+                if abs(y_frame_list[i] - x_frame_list[-1]) < min:
+                    min = abs(y_frame_list[i] - x_frame_list[-1])
+                    end_idx = i
+        dist = dtw.dtw(x_vec_list[start_idx:], y_vec_list[:end_idx], keep_internals=True).distance
+
+    return dist
 
 
 def id_mapping(distance_list, mapping_list):
@@ -233,3 +338,6 @@ for i in range(0, len(result_info_list)-1):
     id_mapping(result_dist_list, id_map_list)
     print(id_map_list)
 
+# Accurate
+
+# Assign global id
