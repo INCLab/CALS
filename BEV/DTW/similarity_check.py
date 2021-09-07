@@ -1,4 +1,5 @@
 import pandas as pd
+import math
 import numpy as np
 import dtw
 
@@ -9,8 +10,8 @@ FRAME_THRESHOLD = 40
 GT = [[1, 8, 11, 14, 18], [2, 6, 9, 10, 12], [3, 4, 17, 19, 20]]  # Ground Truth
 
 
-def make_df_list(txt_name):
-    result = pd.read_csv('../temp/' + txt_name + '.txt', delimiter=' ', header=None)
+def make_df_list(filename):
+    result = pd.read_csv('../temp/' + filename + '.txt', delimiter=' ', header=None)
     result.columns = ['frame', 'id', 'x', 'y']
 
     ##### 임시로 수동 전처리 ##############
@@ -31,12 +32,12 @@ def make_df_list(txt_name):
         3. id 5 제거
     '''
 
-    if txt_name == 'BEV_result0':
+    if filename == 'BEV_result0':
         result['id'][(result['id'] == 16)] = 10
         result['id'][(result['id'] == 23)] = 10
         result.drop(result[result['id'] == 40].index, inplace=True)
         result.drop(result[result['id'] == 42].index, inplace=True)
-    elif txt_name == 'BEV_result1':
+    elif filename == 'BEV_result1':
         result['id'][(result['id'] == 24)] = 9
         result['id'][(result['id'] == 33)] = 9
         result['id'][(result['id'] == 13)] = 14
@@ -45,7 +46,7 @@ def make_df_list(txt_name):
         result['id'][(result['id'] == 32)] = 17
         result['id'][(result['id'] == 43)] = 17
         result.drop(result[result['id'] == 41].index, inplace=True)
-    elif txt_name == 'BEV_result2':
+    elif filename == 'BEV_result2':
         result['id'][(result['id'] == 26)] = 12
         result['id'][(result['id'] == 34)] = 20
         result.drop(result[result['id'] == 5].index, inplace=True)
@@ -65,7 +66,7 @@ def make_df_list(txt_name):
     for df in df_list:
         result_list += divide_df(df)
 
-    return result_list
+    return result_list, id_list
 
 
 # If dataframe is spaced more than threshold, divide it
@@ -138,53 +139,49 @@ def create_unit_vec(df):
     return info_list
 
 
-# ToDO: 유사도 비교에 대한 모든 경우의 수 리스트를 return 해야함, arg를 단일 df로 받으면 안됨
-def check_similarity(info, info_list):
+def check_similarity(info_list, compare_list):
     '''
         기준 아이디에 대해 다른 result 파일에서 나온 모든 아이디들과 케이스별로 유사도 측정(혹은 제외) 후,
-        DTW distance를 모두 저장한 뒤에 마지막에 가장 낮은 distance 값을 갖는 id쌍 부터 차례대로 mapping하며
-        나머지는 지움
+        DTW distance를 모두 저장
     '''
 
-    # result_list: [result0_dist_list: [[compare_id, compared_id, DTW_dist], ...], result1_dist_list: , ...]
-    # length of result_list: camera result files - 1
+    # list of total dtw distance info
     result_list = []
+    for _ in range(0, len(compare_list)):
+        result_list.append([])
 
     # Loop for each result file
-    for i in range(len(info_list)):
-        dist_list = []
-        for k in info_list[i]:
+    for info in info_list:
+        for i in range(0, len(compare_list)):
+            for k in compare_list[i]:
 
-            # 1. 겹치지 않는경우: 일단 제외한다
-            if info[0][0] > k[0][-1] or info[0][-1] < k[0][0]:
-                continue
+                # 1. 겹치지 않는경우: 일단 제외한다
+                if info[0][0] > k[0][-1] or info[0][-1] < k[0][0]:
+                    continue
 
-            # 2. 포함하는 경우 : DTW로 유사도 측정
-            elif (info[0][0] < k[0][0] and info[0][-1] > k[0][-1]) or (info[0][0] > k[0][0] and info[0][-1] < k[0][-1]):
-                dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
-                dist_list.append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+                # 2. 포함하는 경우 : DTW로 유사도 측정
+                elif (info[0][0] < k[0][0] and info[0][-1] > k[0][-1]) or (info[0][0] > k[0][0] and info[0][-1] < k[0][-1]):
+                    dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
+                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
 
-            # 3. 절반이상 겹치는 경우 : DTW로 유사도 측정
-            elif (info[0][0] > k[0][0] and info[0][int(len(info[0]) / 2)] <= k[0][-1] <= info[0][-1]) or (
-                    info[0][0] < k[0][0] and k[0][int(len(k[0]) / 2)] <= info[0][-1] <= k[0][-1]):
-                dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
-                dist_list.append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+                # 3. 절반이상 겹치는 경우 : DTW로 유사도 측정
+                elif (info[0][0] > k[0][0] and info[0][int(len(info[0]) / 2)] <= k[0][-1] <= info[0][-1]) or (
+                        info[0][0] < k[0][0] and k[0][int(len(k[0]) / 2)] <= info[0][-1] <= k[0][-1]):
+                    dist = dtw.dtw(k[2], info[2], keep_internals=True).distance
+                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
 
-            # 4. 절반이하로 겹치는 경우: 제외
-            elif (info[0][0] > k[0][0] and info[0][int(len(info[0]) / 2)] > k[0][-1]) or (
-                    info[0][0] < k[0][0] and k[0][int(len(k[0]) / 2)] > info[0][-1]):
-                continue
-
-        result_list.append(dist_list)
+                # 4. 절반이하로 겹치는 경우: 제외
+                elif (info[0][0] > k[0][0] and info[0][int(len(info[0]) / 2)] > k[0][-1]) or (
+                        info[0][0] < k[0][0] and k[0][int(len(k[0]) / 2)] > info[0][-1]):
+                    continue
 
     return result_list
 
 
-def id_mapping(dist_dictionary, mapping_list):
-    keys = list(dist_dictionary.keys())
+def id_mapping(distance_list, mapping_list):
 
-    for key in keys:
-        sorted_list = sorted(dist_dictionary[key], key=lambda x: (x[2], x[0]))
+    for dist_list in distance_list:
+        sorted_list = sorted(dist_list, key=lambda x: (x[2], x[0]))
 
         while sorted_list:
             compare_id = sorted_list[0][0]
@@ -215,8 +212,11 @@ def id_mapping(dist_dictionary, mapping_list):
 
 # Create Dataframes by id
 result_df_list = []
+total_id_list = []
 for name in txt_name:
-    result_df_list.append(make_df_list(name))
+    df_list, id_list = make_df_list(name)
+    result_df_list.append(df_list)
+    total_id_list.append(id_list)
 
 # Create id info list
 result_info_list = []
@@ -227,22 +227,9 @@ for df_list in result_df_list:
     result_info_list.append(info)
 
 # Create high similarity ID list
-id_map_list = []
+for i in range(0, len(result_info_list)-1):
+    id_map_list = []
+    result_dist_list = check_similarity(result_info_list[i], result_info_list[i+1:])
+    id_mapping(result_dist_list, id_map_list)
+    print(id_map_list)
 
-# dist_dict.keys : result.txt file number
-dist_dict = dict()
-
-# initialize
-for i in range(0, len(result_info_list) - 1):
-    dist_dict[i] = []
-
-
-for info in result_info_list[0]:
-    result_dist_list = check_similarity(info, result_info_list[1:])
-
-    for num in range(0, len(result_dist_list)):
-        if result_dist_list[num]:
-            dist_dict[num] += result_dist_list[num]
-
-id_mapping(dist_dict, id_map_list)
-print(id_map_list)
