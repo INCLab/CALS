@@ -12,13 +12,15 @@ if len(sys.argv) != 2:
 
 videos_dir = sys.argv[1]
 
+
+
 # 폴더 내 모든 파일에 대해 Loop
 for f in os.listdir(videos_dir):
     # OpenCV로 Video File Open 
     videofile = cv2.VideoCapture(videos_dir + '/' + f)
     
     # Video File이 열렸으면
-    while videofile.isOpened():
+    if videofile.isOpened():
         # Frame Load 
         ret, frame = videofile.read()
         
@@ -27,13 +29,14 @@ for f in os.listdir(videos_dir):
             sys.exit()
 
         # Frame 저장
-        imgfilename = 'output/frame/' + os.path.splitext(f)[0] + '_frame.jpg'
+        # ./output/frame/ch01/ch01_frame.jpg
+        if not os.path.exists('./output/frame/' + os.path.splitext(f)[0]):
+            os.makedirs('./output/frame/' + os.path.splitext(f)[0])
+
+        imgfilename = './output/frame/' + os.path.splitext(f)[0] + '/' + os.path.splitext(f)[0] + '_frame.jpg'
 
         cv2.imwrite(imgfilename, frame)
         print('Saved to ' + imgfilename)
 
-        # Break
-        break
-    
     # Release
     videofile.release()
