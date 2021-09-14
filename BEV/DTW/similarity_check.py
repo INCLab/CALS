@@ -326,6 +326,17 @@ def change_to_global(T_set, id_set, gid_set):
                     break
     return
 
+
+# ToDo:
+def generate_global_info(total_info):
+    I_G = list()
+
+    for i in range(0, len(total_info)):
+
+
+    return I_G
+
+
 # Create Dataframes by id
 result_df_list = []
 total_id_list = []
@@ -348,7 +359,8 @@ id_map_list = [[],[]]
 for i in range(0, len(result_info_list)-1):
     result_dist_list = check_similarity(result_info_list[i], result_info_list[i+1:])
     id_mapping(result_dist_list, id_map_list[i])
-    print(id_map_list[i])
+
+print(id_map_list[0])
 
 # Accurate
 
@@ -361,12 +373,16 @@ for i in range(1, len(id_map_list[0]) + 1):
 
 change_to_global(result_df_list, id_map_list[0], global_id_set)
 
-total_list =list()
+total_list = list()
 for T in result_df_list:
     for id_info in T:
         total_list += id_info.values.tolist()
 
 total_list.sort()
+
+global_I = generate_global_info(total_list)
+
+print(global_I)
 
 
 
