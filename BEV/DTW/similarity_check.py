@@ -315,6 +315,17 @@ def id_mapping(distance_list, mapping_list):
     return
 
 
+# Input: dataframe list by camera & id
+# Output: Same as input but id == global_id
+def change_to_global(T_set, id_set, gid_set):
+    for T in T_set:
+        for id_info in T:
+            for i in range(0, len(id_set)):
+                if id_info['id'][0] in id_set[i]:
+                    id_info['id'] = gid_set[i]
+                    break
+    return
+
 # Create Dataframes by id
 result_df_list = []
 total_id_list = []
@@ -332,12 +343,31 @@ for df_list in result_df_list:
     result_info_list.append(info)
 
 # Create high similarity ID list
+# ToDo: 현재는 result0를 기준으로 result1,2를 비교한 결과만 사용, 후에 result1을 기준으로 구한 값도 고려해야함
+id_map_list = [[],[]]
 for i in range(0, len(result_info_list)-1):
-    id_map_list = []
     result_dist_list = check_similarity(result_info_list[i], result_info_list[i+1:])
-    id_mapping(result_dist_list, id_map_list)
-    print(id_map_list)
+    id_mapping(result_dist_list, id_map_list[i])
+    print(id_map_list[i])
 
 # Accurate
 
 # Assign global id
+global_id_num = 1000
+global_id_set = []
+
+for i in range(1, len(id_map_list[0]) + 1):
+    global_id_set.append(global_id_num + i)
+
+change_to_global(result_df_list, id_map_list[0], global_id_set)
+
+total_list =list()
+for T in result_df_list:
+    for id_info in T:
+        total_list += id_info.values.tolist()
+
+total_list.sort()
+
+
+
+
