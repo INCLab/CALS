@@ -5,6 +5,7 @@ import dtw
 
 from sklearn.preprocessing import MinMaxScaler
 
+result_save_dir = '../tmp/'
 txt_name = ['BEV_result0', 'BEV_result1', 'BEV_result2']
 FRAME_THRESHOLD = 40
 
@@ -25,7 +26,7 @@ def make_df_list(filename):
         result1.txt
         1. id 24, 33을 9로 변경
         2. id 13, 31, 36을 14로 변경
-        3. id 32, 43을 17로 변경
+        3. id 32, 43을 17로 변
         4. id 41제거
         
         result2.txt
@@ -467,6 +468,8 @@ global_df.columns = ['frame', 'id', 'x', 'y']
 
 print(global_df)
 
+# Create Global information txt file
+global_df.to_csv('global_result.txt', sep=' ', header=None, index=None)
 
 
 
