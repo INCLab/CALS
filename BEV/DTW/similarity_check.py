@@ -3,6 +3,8 @@ import math
 import numpy as np
 import dtw
 
+from sklearn.preprocessing import MinMaxScaler
+
 txt_name = ['BEV_result0', 'BEV_result1', 'BEV_result2']
 FRAME_THRESHOLD = 40
 
@@ -135,6 +137,32 @@ def create_unit_vec(df):
 
     unit_vec_list = np.array(unit_vec_list)
     info_list.append(unit_vec_list)
+
+    return info_list
+
+
+def create_scalar(df):
+    # Min-Max normalization
+    scaler = MinMaxScaler()
+    scaler.fit(df.iloc[:, 2:])
+    scaled_df = scaler.transform(df.iloc[:, 2:])
+    df.iloc[:, 2:] = scaled_df
+
+    frame_list = df['frame'].to_list()
+    id = df['id'].iloc[0]
+    x_list = df['x'].to_list()
+    y_list = df['y'].to_list()
+
+    # return form : [frame_list[:-1], id, [dist_list]]
+    info_list = [frame_list[:-1], id]
+    scalar_list = []
+
+    # calculate distance
+    for i in range(0, len(x_list) - 1):
+        dist = math.sqrt((x_list[i + 1] - x_list[i])**2 + (y_list[i + 1] - y_list[i])**2)
+        scalar_list.append(dist)
+
+    info_list.append(scalar_list)
 
     return info_list
 
@@ -327,12 +355,56 @@ def change_to_global(T_set, id_set, gid_set):
     return
 
 
-# ToDo:
+# Input: total_info = [[frame, id, x, y], ...]
 def generate_global_info(total_info):
     I_G = list()
 
+    accum_x = [0, 0]  # [accumulative x, number of target]
+    accum_y = [0, 0]
     for i in range(0, len(total_info)):
+        if i != len(total_info) - 1:
+            if total_info[i][0] == total_info[i+1][0] and total_info[i][1] == total_info[i+1][1]:
+                accum_x[0] += total_info[i][2]
+                accum_y[0] += total_info[i][3]
 
+                accum_x[1] += 1
+                accum_y[1] += 1
+            else:
+                if accum_x[1] != 0:
+                    accum_x[0] += total_info[i][2]
+                    accum_y[0] += total_info[i][3]
+
+                    accum_x[1] += 1
+                    accum_y[1] += 1
+
+                    avg_x = int(accum_x[0] / accum_x[1])
+                    avg_y = int(accum_y[0] / accum_y[1])
+
+                    I_G.append([total_info[i][0], total_info[i][1], avg_x, avg_y])
+
+                    # init
+                    accum_x = [0, 0]
+                    accum_y = [0, 0]
+                else:
+                    I_G.append(total_info[i])
+        else:
+            if accum_x[1] != 0:
+                accum_x[0] += total_info[i][2]
+                accum_y[0] += total_info[i][3]
+
+                accum_x[1] += 1
+                accum_y[1] += 1
+
+                avg_x = int(accum_x[0] / accum_x[1])
+                avg_y = int(accum_y[0] / accum_y[1])
+
+                I_G.append([total_info[i][0], total_info[i][1], avg_x, avg_y])
+
+                # init
+                accum_x = [0, 0]
+                accum_y = [0, 0]
+            else:
+                I_G.append(total_info[i])
 
     return I_G
 
@@ -347,15 +419,24 @@ for name in txt_name:
 
 # Create id info list
 result_info_list = []
+
+# Use unit vector
 for df_list in result_df_list:
     info = []
     for df in df_list:
         info.append(create_unit_vec(df))
     result_info_list.append(info)
 
+# Use distance
+# for df_list in result_df_list:
+#     info = []
+#     for df in df_list:
+#         info.append(create_scalar(df))
+#     result_info_list.append(info)
+
 # Create high similarity ID list
 # ToDo: 현재는 result0를 기준으로 result1,2를 비교한 결과만 사용, 후에 result1을 기준으로 구한 값도 고려해야함
-id_map_list = [[],[]]
+id_map_list = [[], []]
 for i in range(0, len(result_info_list)-1):
     result_dist_list = check_similarity(result_info_list[i], result_info_list[i+1:])
     id_mapping(result_dist_list, id_map_list[i])
@@ -381,8 +462,10 @@ for T in result_df_list:
 total_list.sort()
 
 global_I = generate_global_info(total_list)
+global_df = pd.DataFrame(global_I)
+global_df.columns = ['frame', 'id', 'x', 'y']
 
-print(global_I)
+print(global_df)
 
 
 
