@@ -362,32 +362,14 @@ def generate_global_info(total_info):
 
     accum_x = [0, 0]  # [accumulative x, number of target]
     accum_y = [0, 0]
+
     for i in range(0, len(total_info)):
-        if i != len(total_info) - 1:
-            if total_info[i][0] == total_info[i+1][0] and total_info[i][1] == total_info[i+1][1]:
-                accum_x[0] += total_info[i][2]
-                accum_y[0] += total_info[i][3]
+        if i != len(total_info) - 1 and total_info[i][0] == total_info[i+1][0] and total_info[i][1] == total_info[i+1][1]:
+            accum_x[0] += total_info[i][2]
+            accum_y[0] += total_info[i][3]
 
-                accum_x[1] += 1
-                accum_y[1] += 1
-            else:
-                if accum_x[1] != 0:
-                    accum_x[0] += total_info[i][2]
-                    accum_y[0] += total_info[i][3]
-
-                    accum_x[1] += 1
-                    accum_y[1] += 1
-
-                    avg_x = int(accum_x[0] / accum_x[1])
-                    avg_y = int(accum_y[0] / accum_y[1])
-
-                    I_G.append([total_info[i][0], total_info[i][1], avg_x, avg_y])
-
-                    # init
-                    accum_x = [0, 0]
-                    accum_y = [0, 0]
-                else:
-                    I_G.append(total_info[i])
+            accum_x[1] += 1
+            accum_y[1] += 1
         else:
             if accum_x[1] != 0:
                 accum_x[0] += total_info[i][2]
