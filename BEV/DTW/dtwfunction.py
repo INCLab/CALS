@@ -308,6 +308,7 @@ def dtw_overlap_frames(x_id_info, y_id_info, case):
     return dist
 
 
+# Todo: result1, 2 의 similarity도 반영해서 id mapping을 진행해야함
 def id_mapping(distance_list, mapping_list):
     for dist_list in distance_list:
         sorted_list = sorted(dist_list, key=lambda x: (x[2], x[0]))
