@@ -136,6 +136,27 @@ def create_unit_vec(df):
     return info_list
 
 
+# Select 1.unit vector or 2. normalized scalar or 3. vector
+# Default: unit vector
+def select_feature(result_df_list, info_list, feature='unit'):
+    if feature == 'unit':
+        for df_list in result_df_list:
+            info = []
+            for df in df_list:
+                info.append(create_unit_vec(df))
+            info_list.append(info)
+    elif feature == 'scalar':
+        for df_list in result_df_list:
+            info = []
+            for df in df_list:
+                info.append(create_scalar(df))
+            info_list.append(info)
+    elif feature == 'vector':
+        print('not yet')
+
+    return
+
+
 def create_scalar(df):
     # Min-Max normalization
     scaler = MinMaxScaler()

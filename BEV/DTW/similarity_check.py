@@ -20,19 +20,9 @@ for name in txt_name:
 # Create id info list
 result_info_list = []
 
-# Use unit vector
-for df_list in result_df_list:
-    info = []
-    for df in df_list:
-        info.append(dfunc.create_unit_vec(df))
-    result_info_list.append(info)
-
-# Use distance
-# for df_list in result_df_list:
-#     info = []
-#     for df in df_list:
-#         info.append(create_scalar(df))
-#     result_info_list.append(info)
+# Select feature 1.unit(unit vector) 2.scalar(normalized scalar) 3.vector
+# and generate result_info_list
+dfunc.select_feature(result_df_list, result_info_list, feature='unit')
 
 # Create high similarity ID list
 # ToDo: 현재는 result0를 기준으로 result1,2를 비교한 결과만 사용, 후에 result1을 기준으로 구한 값도 고려해야함
