@@ -20,7 +20,7 @@ for name in txt_name:
 # Create id info list
 result_info_list = []
 
-# Select feature 1.unit(unit vector) 2.scalar(normalized scalar) 3.vector
+# Select feature 1.unit(unit vector) 2.scalar(normalized scalar) 3.vector  (default: unit)
 # and generate result_info_list
 dfunc.select_feature(result_df_list, result_info_list, feature='unit')
 
@@ -32,8 +32,6 @@ for i in range(0, len(result_info_list)-1):
     dfunc.id_mapping(result_dist_list, id_map_list[i])  # id_mapping에서 todo 처리
 
 print(id_map_list[0])
-
-# Accurate
 
 # Assign global id
 global_id_num = 1000
