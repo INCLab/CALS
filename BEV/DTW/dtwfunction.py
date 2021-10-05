@@ -233,29 +233,29 @@ def check_similarity(info_list, compare_list):
                 # case 1
                 elif info[0][0] <= k[0][0] and info[0][-1] >= k[0][-1]:
                     dist = dtw_overlap_frames(info, k, 1)
-                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compared_id, DTW_dist]
                 # case 2
                 elif info[0][0] >= k[0][0] and info[0][-1] <= k[0][-1]:
                     dist = dtw_overlap_frames(info, k, 2)
-                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compared_id, DTW_dist]
 
                 # *** 절반이상 겹치는 경우 : DTW로 유사도 측정
                 # case 3
                 elif info[0][0] >= k[0][0] and info[0][int(len(info[0]) / 2)] <= k[0][-1] <= info[0][-1]:
                     dist = dtw_overlap_frames(info, k, 3)
-                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compared_id, DTW_dist]
                 # case 4
                 elif info[0][0] <= k[0][0] and k[0][int(len(k[0]) / 2)] <= info[0][-1] <= k[0][-1]:
                     dist = dtw_overlap_frames(info, k, 4)
-                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compared_id, DTW_dist]
 
                 # *** 절반이하로 겹치는 경우: 제외?(포함하려면 위 코드와 합치기)
                 elif k[0][0] <= info[0][0] < k[0][-1] < info[0][int(len(info[0]) / 2)]:
                     dist = dtw_overlap_frames(info, k, 3)
-                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compared_id, DTW_dist]
                 elif info[0][0] <= k[0][0] < info[0][-1] < k[0][int(len(k[0]) / 2)]:
                     dist = dtw_overlap_frames(info, k, 4)
-                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compare_id, DTW_dist]
+                    result_list[i].append([info[1], k[1], dist])  # [compare_id, compared_id, DTW_dist]
                 else:
                     print('Not matching case!!!!')
 

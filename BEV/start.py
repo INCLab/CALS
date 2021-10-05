@@ -16,8 +16,12 @@ print(output_path)
 #python start.py ./input/video ./output ./input/map.png
 
 
-os.system("python ./ProjectMOT/src/demo.py mot --load_model ./ProjectMOT/models/fairmot_dla34.pth --conf_thres 0.4 --input-video "+input_path)
-os.system("python mouse_point.py "+map_path)
-os.system("python BEV.py "+input_path + " " + output_path + " "+map_path)
+#os.system("python ./ProjectMOT/src/demo.py mot --load_model ./ProjectMOT/models/fairmot_dla34.pth --conf_thres 0.4 --input-video "+input_path)
+#os.system("python mouse_point.py "+map_path)
+#os.system("python BEV.py "+input_path + " " + output_path + " "+map_path)
 os.system("python output_video.py "+ output_path)
+
+# Create Global ID BEV frames
+
+#os.system("python Global_BEV.py "+input_path + " " + output_path + " "+map_path)
 # os.system("rm -r temp")

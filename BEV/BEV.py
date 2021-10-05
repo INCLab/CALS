@@ -17,6 +17,7 @@ lonloat : 도면 공간
 '''
 input_path = sys.argv[1]
 output_path = sys.argv[2]
+global_output_path = os.path.join(output_path, 'global_map_frame')
 heatmap_path = os.path.join(output_path, 'heatmap.png')
 output_path = os.path.join(output_path, 'map_frame')
 map_path = sys.argv[3]
@@ -87,7 +88,7 @@ for frames in range(1, int(globals()['frame{}'.format(0)])):
     for i in range(num):
         pm = PixelMapper(quad_coords_list[i]["pixel"], quad_coords_list[i]["lonlat"])
         if globals()['point{}'.format(i)].get(str(frames)) != None:
-            for label in globals()['point{}'.format(i)].get(str(frames)) :
+            for label in globals()['point{}'.format(i)].get(str(frames)):
                 uv = (label[1], label[2])
                 lonlat = list(pm.pixel_to_lonlat(uv))
                 li = [label[0], int(lonlat[0][0]), int(lonlat[0][1])]
@@ -117,7 +118,7 @@ for frames in range(1, int(globals()['frame{}'.format(0)])):
 #                 f.write(str(key) + ' ' + temp.rstrip() + '\n')
 
 
-# heatmap
+# =========== heatmap ======================
 
 import pandas as pd
 
