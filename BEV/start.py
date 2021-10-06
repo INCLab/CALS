@@ -23,6 +23,6 @@ print(output_path)
 
 # Create Global ID BEV frames
 
-#os.system("python Global_BEV.py "+input_path + " " + output_path + " "+map_path)
+#os.system("python global_BEV.py "+input_path + " " + output_path + " "+map_path)
 os.system("python global_output_video.py " + output_path)
 # os.system("rm -r temp")
