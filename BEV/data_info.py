@@ -67,7 +67,7 @@ if target_id1_df.empty:
     print("Target 1 doesn't exist!")
     exit()
 elif target_id2_df.empty:
-    print("Target 1 doesn't exist!")
+    print("Target 2 doesn't exist!")
     exit()
 
 is_overlap = check_overlap(target_id1_df, target_id2_df)
