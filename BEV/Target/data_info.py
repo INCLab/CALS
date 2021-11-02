@@ -56,7 +56,7 @@ def check_overlap(tar1_df, tar2_df):
 
 
 # Read global_result.txt and create dataframe
-glob_info_df = pd.read_csv('temp/global_result.txt', delimiter=' ', header=None)
+glob_info_df = pd.read_csv('../temp/global_result.txt', delimiter=' ', header=None)
 glob_info_df.columns = ['frame', 'id', 'x', 'y']
 
 target_id1_df = glob_info_df[(glob_info_df['id'] == target_id1)]
@@ -79,4 +79,8 @@ else:
     print("There's no overlap frames!")
 
 
+
+# ### target - space ####
+
+# todo: space 네점 영역 안에 들어온 경우 체크
 
