@@ -6,6 +6,9 @@ from database.tracking_db import tracking_db
 from multiprocessing import Process
 import os
 import time
+import sys
+import keyboard
+
 def sniffing(nicname):
     db = tracking_db()
 
@@ -53,6 +56,10 @@ def sniffing(nicname):
         except Exception as e:
             print('Error', e)
 
+        # if Pressed Q, Exit
+        if keyboard.read_key() == "q":
+            break
+
 def ping(nicname):
     print('Start Ping...')
 
@@ -66,15 +73,19 @@ def ping(nicname):
         pingcmd = 'ping -q -c 5 -I ' + nicname + ' ' + gwip + ' 1> /dev/null'
         os.system(pingcmd)
 
+        # if Pressed Q, Exit
+        if keyboard.read_key() == "q":
+            break
+
         # Sleep
         time.sleep(1)
 
 if __name__ == '__main__':
-    # CSI Extractor Interface
-    csinicname = 'wlan1'
+    # CSI Extractor Interface (Pi Internal Card)
+    csinicname = sys.argv[1]
 
     # Ping dedicated interface
-    pingnicname = 'wlan0'
+    pingnicname = sys.argv[2]
 
     sniffing = Process(target=sniffing, args=(csinicname, ))
     ping = Process(target=ping, args=(pingnicname, ))
