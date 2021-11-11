@@ -278,6 +278,7 @@ def dtw_overlap_frames(x_id_info, y_id_info, case):
     start_idx = 0
     end_idx = 0
 
+    # Case 1,2: 포함하는 경우
     if case == 1:
         try:
             start_idx = x_frame_list.index(y_frame_list[0])
@@ -315,7 +316,7 @@ def dtw_overlap_frames(x_id_info, y_id_info, case):
                     min = abs(y_frame_list[i] - x_frame_list[-1])
                     end_idx = i
         dist = dtw.dtw(x_vec_list, y_vec_list[start_idx:end_idx + 1], keep_internals=True).distance
-
+    # Case 3,4: 겹치는 경우
     elif case == 3:
         try:
             start_idx = y_frame_list.index(x_frame_list[0])
@@ -359,6 +360,7 @@ def dtw_overlap_frames(x_id_info, y_id_info, case):
 
 # Todo: result1, 2 의 similarity도 반영해서 id mapping을 진행해야함
 def id_mapping(distance_list, mapping_list):
+    print(distance_list)
     for dist_list in distance_list:
         sorted_list = sorted(dist_list, key=lambda x: (x[2], x[0]))
 
