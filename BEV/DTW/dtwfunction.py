@@ -58,65 +58,11 @@ def make_df_list(filename):
         df = result[result['id'] == id]
         df_list.append(df)
 
-    result_list = []
-
-    for df in df_list:
-        result_list += divide_df(df)
-
-    print(result_list)
-
-    return result_list, id_list
-
-
-# If dataframe is spaced more than threshold, store two points
-def divide_df(dataframe, frame_threshold=FRAME_THRESHOLD):
-    list_by_row = []
-    div_idx_list = []
-
-    # list_by_row == [[frame, id, x, y], [...], ...]
-    for i in range(len(dataframe)):
-        list_by_row.append(dataframe.iloc[i].to_list())
-
-    # Check frame interval
-    for j in range(1, len(list_by_row)):
-        if frame_threshold < list_by_row[j][0] - list_by_row[j - 1][0]:  # frame interval
-            div_idx_list.append(j)
-
-    # If elements in div_idx_list are consecutive, it means front div point consist dataframe ifself.
-    # So, discard front point
-    if len(div_idx_list) > 1:
-        for k in range(len(div_idx_list) - 1):
-            if div_idx_list[k] + 1 == div_idx_list[k + 1]:
-                div_idx_list[k] = -1
-
-    remove_idx = {-1}
-    div_idx = [i for i in div_idx_list if i not in remove_idx]
-
-    # Divide dataframe
-    df_list = []
-    # if div_idx:
-    #     for i in range(len(div_idx)):
-    #         if i == 0:
-    #             df_list.append(list_by_row[:div_idx[i]])
-    #         else:
-    #             df_list.append(list_by_row[div_idx[i - 1]:div_idx[i]])
-    #     df_list.append(list_by_row[div_idx[-1]:])
-    # else:
-    # df_list.append(list_by_row)
-
-    # result_df = []
-    # for rows in df_list:
-    #     result_df.append(pd.DataFrame(rows, columns=['frame', 'id', 'x', 'y']))
-
-    result_df = pd.DataFrame(list_by_row, columns=['frame', 'id', 'x', 'y'])
-
-    print(result_df)
-
-    return result_df
+    return df_list, id_list
 
 
 # ########## Create Feature for DTW #################
-def create_unit_vec(df):
+def create_unit_vec(df, threshold):
     frame_list = df['frame'].to_list()
     id = df['id'].iloc[0]
     x_list = df['x'].to_list()
@@ -128,6 +74,8 @@ def create_unit_vec(df):
 
     # calculate unit vector
     for i in range(0, len(x_list) - 1):
+        if frame_list[i+1] - frame_list[i] > threshold:
+            continue
         vec = np.array([x_list[i + 1] - x_list[i], y_list[i + 1] - y_list[i]])
 
         # For divide by 0
@@ -143,7 +91,7 @@ def create_unit_vec(df):
     return info_list
 
 
-def create_scalar(df):
+def create_scalar(df, threshold):
     # Min-Max normalization
     scaler = MinMaxScaler()
     scaler.fit(df.iloc[:, 2:])
@@ -161,6 +109,8 @@ def create_scalar(df):
 
     # calculate distance
     for i in range(0, len(x_list) - 1):
+        if frame_list[i+1] - frame_list[i] > threshold:
+            continue
         dist = math.sqrt((x_list[i + 1] - x_list[i]) ** 2 + (y_list[i + 1] - y_list[i]) ** 2)
         scalar_list.append(dist)
 
@@ -169,7 +119,7 @@ def create_scalar(df):
     return info_list
 
 
-def create_vec(df):
+def create_vec(df, threshold):
     frame_list = df['frame'].to_list()
     id = df['id'].iloc[0]
     x_list = df['x'].to_list()
@@ -181,6 +131,8 @@ def create_vec(df):
 
     # calculate unit vector
     for i in range(0, len(x_list) - 1):
+        if frame_list[i+1] - frame_list[i] > threshold:
+            continue
         vec = np.array([x_list[i + 1] - x_list[i], y_list[i + 1] - y_list[i]])
         vec_list.append(vec)
 
@@ -198,19 +150,19 @@ def select_feature(result_df_list, info_list, feature='unit'):
         for df_list in result_df_list:
             info = []
             for df in df_list:
-                info.append(create_unit_vec(df))
+                info.append(create_unit_vec(df, FRAME_THRESHOLD))
             info_list.append(info)
     elif feature == 'scalar':
         for df_list in result_df_list:
             info = []
             for df in df_list:
-                info.append(create_scalar(df))
+                info.append(create_scalar(df, FRAME_THRESHOLD))
             info_list.append(info)
     elif feature == 'vector':
         for df_list in result_df_list:
             info = []
             for df in df_list:
-                info.append(create_vec(df))
+                info.append(create_vec(df, FRAME_THRESHOLD))
             info_list.append(info)
 
     return
@@ -367,7 +319,6 @@ def dtw_overlap_frames(x_id_info, y_id_info, case):
 
 # Todo: result1, 2 의 similarity도 반영해서 id mapping을 진행해야함
 def id_mapping(distance_list, mapping_list):
-    print(distance_list)
     for dist_list in distance_list:
         sorted_list = sorted(dist_list, key=lambda x: (x[2], x[0]))
 
