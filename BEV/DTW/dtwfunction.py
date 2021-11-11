@@ -5,7 +5,7 @@ import pandas as pd
 
 from sklearn.preprocessing import MinMaxScaler
 
-FRAME_THRESHOLD = 40
+FRAME_THRESHOLD = 20
 
 def make_df_list(filename):
     result = pd.read_csv('../temp/' + filename + '.txt', delimiter=' ', header=None)
@@ -63,14 +63,17 @@ def make_df_list(filename):
     for df in df_list:
         result_list += divide_df(df)
 
+    print(result_list)
+
     return result_list, id_list
 
 
-# If dataframe is spaced more than threshold, divide it
+# If dataframe is spaced more than threshold, store two points
 def divide_df(dataframe, frame_threshold=FRAME_THRESHOLD):
     list_by_row = []
     div_idx_list = []
 
+    # list_by_row == [[frame, id, x, y], [...], ...]
     for i in range(len(dataframe)):
         list_by_row.append(dataframe.iloc[i].to_list())
 
@@ -91,19 +94,23 @@ def divide_df(dataframe, frame_threshold=FRAME_THRESHOLD):
 
     # Divide dataframe
     df_list = []
-    if div_idx:
-        for i in range(len(div_idx)):
-            if i == 0:
-                df_list.append(list_by_row[:div_idx[i]])
-            else:
-                df_list.append(list_by_row[div_idx[i - 1]:div_idx[i]])
-        df_list.append(list_by_row[div_idx[-1]:])
-    else:
-        df_list.append(list_by_row)
+    # if div_idx:
+    #     for i in range(len(div_idx)):
+    #         if i == 0:
+    #             df_list.append(list_by_row[:div_idx[i]])
+    #         else:
+    #             df_list.append(list_by_row[div_idx[i - 1]:div_idx[i]])
+    #     df_list.append(list_by_row[div_idx[-1]:])
+    # else:
+    # df_list.append(list_by_row)
 
-    result_df = []
-    for rows in df_list:
-        result_df.append(pd.DataFrame(rows, columns=['frame', 'id', 'x', 'y']))
+    # result_df = []
+    # for rows in df_list:
+    #     result_df.append(pd.DataFrame(rows, columns=['frame', 'id', 'x', 'y']))
+
+    result_df = pd.DataFrame(list_by_row, columns=['frame', 'id', 'x', 'y'])
+
+    print(result_df)
 
     return result_df
 
