@@ -80,8 +80,9 @@ def load_coefficients(path):
 def undistort(img_path, save_path, prefix, image_format, mtx, dist):
     images = glob.glob(img_path + '/' + prefix + '*.' + image_format)
 
-    i = 0
     for fname in images:
+        sname = fname.split('\\')[-1]
+        print(sname)
         img = cv2.imread(fname)
 
         h, w = img.shape[:2]
@@ -92,17 +93,16 @@ def undistort(img_path, save_path, prefix, image_format, mtx, dist):
         x, y, w, h = roi
         dst = dst[y:y + h, x:x + w]
 
-        file_path = save_path + '/' + str(i) + '.' + image_format
+        file_path = save_path + '/' + sname
 
         cv2.imwrite(file_path, dst)
-        i += 1
 
 
 if __name__ == '__main__':
     image_dir = './chess_img'
     prefix = 'chess'
     image_format = 'jpg'
-    square_size = 2  # 1cm
+    square_size = 30  # 2cm
     save_file = './saved_coeffi/coeffi.yaml'
 
     ret, mtx, dist, rvecs, tvecs = calibrate(image_dir, prefix, image_format, square_size)
