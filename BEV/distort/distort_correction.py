@@ -7,7 +7,7 @@ import argparse
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 
-def calibrate(dirpath, prefix, image_format, square_size, width=9, height=6):
+def calibrate(dirpath, prefix, image_format, square_size, width=6, height=4):
     """ Apply camera calibration operation for images in the given directory path. """
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(8,6,0)
     objp = np.zeros((height*width, 3), np.float32)
@@ -28,8 +28,13 @@ def calibrate(dirpath, prefix, image_format, square_size, width=9, height=6):
         img = cv2.imread(fname)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+
         # Find the chess board corners
         ret, corners = cv2.findChessboardCorners(gray, (width, height), None)
+
+        # Check chessboard is detected
+        print(ret)
+        print(corners)
 
         # If found, add object points, image points (after refining them)
         if ret:
@@ -41,7 +46,10 @@ def calibrate(dirpath, prefix, image_format, square_size, width=9, height=6):
             # Draw and display the corners
             img = cv2.drawChessboardCorners(img, (width, height), corners2, ret)
 
-    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+            cv2.imshow('win', img)
+            cv2.waitKey(0)
+
+    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None, flags=cv2.CALIB_FIX_K2)
 
     return [ret, mtx, dist, rvecs, tvecs]
 
@@ -69,6 +77,40 @@ def load_coefficients(path):
     return [camera_matrix, dist_matrix]
 
 
-ret, mtx, dist, rvecs, tvecs = calibrate(args.image_dir, args.prefix, args.image_format, args.square_size, args.width, args.height)
-save_coefficients(mtx, dist, args.save_file)
-print("Calibration is finished. RMS: ", ret)
+def undistort(img_path, save_path, prefix, image_format, mtx, dist):
+    images = glob.glob(img_path + '/' + prefix + '*.' + image_format)
+
+    i = 0
+    for fname in images:
+        img = cv2.imread(fname)
+
+        h, w = img.shape[:2]
+
+        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+
+        dst = cv2.undistort(img, mtx, dist, None, newcameramtx)
+        x, y, w, h = roi
+        dst = dst[y:y + h, x:x + w]
+
+        file_path = save_path + '/' + str(i) + '.' + image_format
+
+        cv2.imwrite(file_path, dst)
+        i += 1
+
+
+if __name__ == '__main__':
+    image_dir = './chess_img'
+    prefix = 'chess'
+    image_format = 'jpg'
+    square_size = 2  # 1cm
+    save_file = './saved_coeffi/coeffi.yaml'
+
+    ret, mtx, dist, rvecs, tvecs = calibrate(image_dir, prefix, image_format, square_size)
+
+    save_coefficients(mtx, dist, save_file)
+    print("Calibration is finished. RMS: ", ret)
+
+
+    save_dir = './test_img'
+    undistort(image_dir, save_dir, prefix, image_format, mtx, dist)
+    print('Save correct distortion images.')
