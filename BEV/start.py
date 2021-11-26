@@ -19,10 +19,10 @@ print(output_path)
 #os.system("python ./ProjectMOT/src/demo.py mot --load_model ./ProjectMOT/models/fairmot_dla34.pth --conf_thres 0.4 --input-video "+input_path)
 #os.system("python mouse_point.py "+map_path)
 #os.system("python BEV.py "+input_path + " " + output_path + " "+map_path)
-#os.system("python output_video.py " + output_path)
+os.system("python output_video.py " + output_path)
 
 # Create Global ID BEV frames
 
 #os.system("python global_BEV.py "+input_path + " " + output_path + " "+map_path)
-os.system("python global_output_video.py " + output_path)
+#os.system("python global_output_video.py " + output_path)
 # os.system("rm -r temp")

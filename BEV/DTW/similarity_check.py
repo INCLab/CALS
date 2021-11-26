@@ -5,8 +5,7 @@ result_save_dir = '../tmp/'
 txt_name = ['BEV_result0', 'BEV_result1', 'BEV_result2']
 
 
-# 정익:2,6,9,10,12  민재:1,8,11,14,18  찬영:3,4,17,19,20
-GT = [[1, 8], [11, 14, 18], [2, 6], [9, 10, 12], [3, 4], [17, 19, 20]]  # Ground Truth
+# 정익:6 / 13 / 21 민재:3 / 15 / 22 찬영:7 / 18 / 23
 
 
 # Create Dataframes by id

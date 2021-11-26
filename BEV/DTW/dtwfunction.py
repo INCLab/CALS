@@ -14,39 +14,33 @@ def make_df_list(filename):
     ##### 임시로 수동 전처리 ##############
     '''
         result0.txt
-        1. id 16, 23을 10으로 변경
-        2. id 40, 42 제거
+        1. id 5를 7으로 변경
+        2. id 2 제거
 
         result1.txt
-        1. id 24, 33을 9로 변경
-        2. id 13, 31, 36을 14로 변경
-        3. id 32, 43을 17로 변
-        4. id 41제거
+        1. id 1을 8로변경
+        4. id 9제거
 
         result2.txt
-        1. id 26을 12로 변경
-        2. id 34를 20으로 변경
-        3. id 5 제거
+        1. id 4 제거
     '''
 
     if filename == 'BEV_result0':
-        result['id'][(result['id'] == 16)] = 10
-        result['id'][(result['id'] == 23)] = 10
-        result.drop(result[result['id'] == 40].index, inplace=True)
-        result.drop(result[result['id'] == 42].index, inplace=True)
+        result['id'][(result['id'] == 5)] = 7
+        result.drop(result[result['id'] == 2].index, inplace=True)
+        result.drop(result[result['id'] == 1].index, inplace=True)
     elif filename == 'BEV_result1':
-        result['id'][(result['id'] == 24)] = 9
-        result['id'][(result['id'] == 33)] = 9
-        result['id'][(result['id'] == 13)] = 14
-        result['id'][(result['id'] == 31)] = 14
-        result['id'][(result['id'] == 36)] = 14
-        result['id'][(result['id'] == 32)] = 17
-        result['id'][(result['id'] == 43)] = 17
-        result.drop(result[result['id'] == 41].index, inplace=True)
+        result['id'][(result['id'] == 1)] = 8
+        result.drop(result[result['id'] == 9].index, inplace=True)
+
+        result['id'][(result['id'] == 3)] = 13
+        result['id'][(result['id'] == 5)] = 15
+        result['id'][(result['id'] == 8)] = 18
     elif filename == 'BEV_result2':
-        result['id'][(result['id'] == 26)] = 12
-        result['id'][(result['id'] == 34)] = 20
-        result.drop(result[result['id'] == 5].index, inplace=True)
+        result['id'][(result['id'] == 1)] = 21
+        result['id'][(result['id'] == 2)] = 22
+        result['id'][(result['id'] == 3)] = 23
+        result.drop(result[result['id'] == 4].index, inplace=True)
     ###################################
 
     id_df = result.drop_duplicates(['id'])
