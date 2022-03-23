@@ -5,12 +5,12 @@ from sqlalchemy.dialects.mysql import DOUBLE, DECIMAL, INTEGER
 class tracking_db:
     db_user = 'tracking'
     db_pw = '1q2w3e4r!'
-    db_host = 'localhost'
-    db_name = 'tracking'
+    db_host = 'loacking'
     db_encoding = 'utf8'
 
     def __init__(self):
-        # Connect to Database Server
+        # Conne
+        # ct to Database Server
         self.engine = create_engine("mysql+mysqldb://" + self.db_user + ":" + self.db_pw + "@" + self.db_host + "/" + self.db_name,encoding=self.db_encoding)
         self.connection = self.engine.connect()
         self.metadata = MetaData(self.engine)
