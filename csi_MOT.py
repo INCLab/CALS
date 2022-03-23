@@ -5,56 +5,107 @@ import pandas as pd
 import pywt
 
 # =========  CSI labeling  =========
-label = {}
-label_list = []
-threshold = 0.9  # error threshold
 db = tracking_db()
+csi_label_list = []
+
 csi_datas = db.get_csi()
 mot_datas = dict(db.get_mot())
 
 
-# Datalist에서 Value와 가장 유사한 값을 찾음
-def matching_values(datalist, value):
-    # Threshold 범위 내의 값만 Numpy Array에 담음
-    array = datalist[np.where(abs(datalist - value) <= threshold)]
+# Make time list
+# timeList: [[Start_t, End_t, Label], [Start_t, End_t, Label], ...]
+def make_time_list(mot_dict):
+    motTimeList = list(mot_dict.keys())
+    timeList = []
 
-    # 해당하는 값이 하나 이상이면
-    if array.size > 0:
-        # 그 중 가장 작은 값(minimum error)의 Index를 리턴
-        minvalue = np.argmin(abs(array - value))
+    # initialize with 1st mot data
+    label = mot_dict[motTimeList[0]]
+    start_time = motTimeList[0]
 
-        return array[minvalue]
-    else:
-        # 하나도 없다면 -1
-        return -1
+    for idx, time in enumerate(motTimeList):
+        current_label = mot_dict[time]
+
+        if current_label == label:
+            if idx == len(motTimeList) - 1:
+                timeList.append([start_time, time, label])
+            continue
+        else:
+            timeList.append([start_time, time, label])
+            start_time = time
+            label = current_label
+
+    return timeList
 
 
-# MOT Timestamp List (nparray)
-mot_times = np.asarray(list(map((lambda x: x), mot_datas.keys())))
+# Make time list
+timeList = make_time_list(mot_datas)
 
+# Labeling CSI data
 for csi_data in csi_datas:
-    # 두 값을 비교해 현재 CSI Time과 가장 유사한 MOT Time을 구함
-    compare = matching_values(mot_times, csi_data[0])
+    csi_time = csi_data[0]
 
-    # -1이면 매칭 실패
-    if compare == -1:
-        label[csi_data[0]] = -1
-        label_list.append(-1)
-    # 그 외에는 해당하는 MOT Timestamp가 Return 되므로 그 값을 Label에 담음
-    else:
-        target_num = mot_datas[compare]  # total target number in the frame
-        exist_label = int()  # (target_num == 0, 0) ,(target_num > 0, 1)
+    # CSI Time이 MOT 시작 시간보다 빠를경우 -1로 labeling
+    if csi_time < timeList[0][0]:
+        csi_label_list.append(-1)
+        continue
+    # CSI Time이 MOT 끝 시간을 넘어간 경우 -1로 labeling
+    elif csi_time >= timeList[-1][1]:
+        csi_label_list.append(-1)
+        continue
 
-        if target_num == 0:
-            exist_label = 0
-        elif target_num > 0:
-            exist_label = 1
+    # tset: [start_time, end_time, label]
+    for tset in timeList:
+        start_time, end_time, label = tset
 
-        label[csi_data[0]] = exist_label
-        label_list.append(exist_label)
+        # 현재 iteration에서 csi time이 end time과 같거나 클경우 다음 iter로
+        if csi_time >= end_time:
+            continue
+        # 시간 범위안에 들어오는경우 해당 label append
+        elif start_time <= csi_time < end_time:
+            csi_label_list.append(label)
 
-        # 이미 뽑은건 제거
-        mot_times = np.delete(mot_times, np.argwhere(mot_times == compare))
+# # Datalist에서 Value와 가장 유사한 값을 찾음
+# def matching_values(datalist, value):
+#     # Threshold 범위 내의 값만 Numpy Array에 담음
+#     array = datalist[np.where(abs(datalist - value) <= threshold)]
+#
+#     # 해당하는 값이 하나 이상이면
+#     if array.size > 0:
+#         # 그 중 가장 작은 값(minimum error)의 Index를 리턴
+#         minvalue = np.argmin(abs(array - value))
+#
+#         return array[minvalue]
+#     else:
+#         # 하나도 없다면 -1
+#         return -1
+#
+#
+# # MOT Timestamp List (nparray)
+# mot_times = np.asarray(list(map((lambda x: x), mot_datas.keys())))
+#
+# for csi_data in csi_datas:
+#     # 두 값을 비교해 현재 CSI Time과 가장 유사한 MOT Time을 구함
+#     compare = matching_values(mot_times, csi_data[0])
+#
+#     # -1이면 매칭 실패
+#     if compare == -1:
+#         label[csi_data[0]] = -1
+#         label_list.append(-1)
+#     # 그 외에는 해당하는 MOT Timestamp가 Return 되므로 그 값을 Label에 담음
+#     else:
+#         target_num = mot_datas[compare]  # total target number in the frame
+#         exist_label = int()  # (target_num == 0, 0) ,(target_num > 0, 1)
+#
+#         if target_num == 0:
+#             exist_label = 0
+#         elif target_num > 0:
+#             exist_label = 1
+#
+#         label[csi_data[0]] = exist_label
+#         label_list.append(exist_label)
+#
+#         # 이미 뽑은건 제거
+#         mot_times = np.delete(mot_times, np.argwhere(mot_times == compare))
 
 
 csi_df = db.get_csi_df()

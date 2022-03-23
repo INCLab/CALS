@@ -2,6 +2,7 @@ import pandas as pd
 from sqlalchemy import Table, Column, MetaData, create_engine, insert, select
 from sqlalchemy.dialects.mysql import DOUBLE, DECIMAL, INTEGER
 
+
 class tracking_db:
     db_user = 'tracking'
     db_pw = '1q2w3e4r!'
@@ -11,7 +12,8 @@ class tracking_db:
     def __init__(self):
         # Conne
         # ct to Database Server
-        self.engine = create_engine("mysql+mysqldb://" + self.db_user + ":" + self.db_pw + "@" + self.db_host + "/" + self.db_name,encoding=self.db_encoding)
+        self.engine = create_engine("mysql+mysqldb://" + self.db_user + ":" + self.db_pw + "@" + self.db_host + "/" +
+                                    self.db_name,encoding=self.db_encoding)
         self.connection = self.engine.connect()
         self.metadata = MetaData(self.engine)
 
