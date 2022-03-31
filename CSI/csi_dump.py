@@ -1,22 +1,37 @@
 import pcap
 import dpkt
+import keyboard
 import pandas as pd
 import numpy as np
-from database.tracking_db import tracking_db
-from multiprocessing import Process
 import os
+from datetime import datetime
 import time
-def sniffing(nicname):
-    db = tracking_db()
 
+
+def sniffing(nicname):
     print('Start Sniifing... @', nicname, 'UDP, Port 5500')
     sniffer = pcap.pcap(name=nicname, promisc=True, immediate=True, timeout_ms=50)
     sniffer.setfilter('udp and port 5500')
+    
+    columns = ['mac', 'time'] + ['_' + str(i) for i in range(0,64)]
+
+    mac_dict = {}
 
     for ts, pkt in sniffer:
         eth = dpkt.ethernet.Ethernet(pkt)
         ip = eth.data
         udp = ip.data
+
+        # MAC Address 추출
+        # UDP Payload에서 Four Magic Byte (0x11111111) 이후 6 Byte는 추출된 Mac Address 의미
+        mac = udp.data[4:10].hex()
+
+        # 해당 mac address 키 값이 없을 경우 새로운 dataframe 생성 후 dict에 추가
+        if mac not in mac_dict:
+            mac_dict[mac] = pd.DataFrame(columns=columns)
+
+        # Four Magic Byte + 6 Byte Mac Address + 2 Byte Sequence Number + 2 Byte Core and Spatial Stream Number + 2 Byte Chanspac + 2 Byte Chip Version 이후 CSI
+        # 4 + 6 + 2 + 2 + 2 + 2 = 18 Byte 이후 CSI 데이터
         csi = udp.data[18:]
 
         bandwidth = ip.__hdr__[2][2]
@@ -25,8 +40,8 @@ def sniffing(nicname):
         # Convert CSI bytes to numpy array
         csi_np = np.frombuffer(
             csi,
-            dtype=np.int16,
-            count=nsub * 2
+            dtype = np.int16,
+            count = nsub * 2
         )
 
         # Cast numpy 1-d array to matrix
@@ -38,7 +53,8 @@ def sniffing(nicname):
         )
 
         csi_df = pd.DataFrame(np.abs(csi_cmplx))
-        csi_df.insert(0, 'time', ts)
+        csi_df.insert(0, 'mac', mac)
+        csi_df.insert(1, 'time', ts)
 
         # Rename Subcarriers Column Name
         columns = {}
@@ -49,9 +65,16 @@ def sniffing(nicname):
 
         # Save dataframe to SQL
         try:
-            db.insert_csi(csi_df)
+            mac_dict[mac] = pd.concat([mac_dict[mac], csi_df], ignore_index=True)
         except Exception as e:
             print('Error', e)
+
+        if keyboard.is_pressed('s'):
+            print("Stop Collecting...")
+
+            for mac_address in mac_dict.keys():
+                mac_dict[mac_address].to_csv('csi_data_{}.csv'.format(mac_address))
+            break
 
 
 def ping(nicname):
@@ -70,19 +93,19 @@ def ping(nicname):
         # Sleep
         time.sleep(1)
 
-
 if __name__ == '__main__':
+    sniffing('wlan0')
     # CSI Extractor Interface
-    csinicname = 'wlan1'
-
-    # Ping dedicated interface
-    pingnicname = 'wlan0'
-
-    sniffing = Process(target=sniffing, args=(csinicname, ))
-    ping = Process(target=ping, args=(pingnicname, ))
-
-    sniffing.start()
-    ping.start()
-
-    sniffing.join()
-    ping.join()
+    # csinicname = 'wlan1'
+    #
+    # # Ping dedicated interface
+    # pingnicname = 'wlan0'
+    #
+    # sniffing = Process(target=sniffing, args=(csinicname, ))
+    # ping = Process(target=ping, args=(pingnicname, ))
+    #
+    # sniffing.start()
+    # ping.start()
+    #
+    # sniffing.join()
+    # ping.join()
