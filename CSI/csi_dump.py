@@ -8,16 +8,34 @@ from datetime import datetime
 import time
 
 
+# for sampling
+def truncate(num, n):
+    integer = int(num * (10**n))/(10**n)
+    return float(integer)
+
+
 def sniffing(nicname):
     print('Start Sniifing... @', nicname, 'UDP, Port 5500')
     sniffer = pcap.pcap(name=nicname, promisc=True, immediate=True, timeout_ms=50)
     sniffer.setfilter('udp and port 5500')
     
-    columns = ['mac', 'time'] + ['_' + str(i) for i in range(0,64)]
+    column = ['mac', 'time'] + ['_' + str(i) for i in range(0, 64)]
 
+    # Dataframe by mac address
     mac_dict = {}
 
+    before_ts = 0.0
+
     for ts, pkt in sniffer:
+        if int(ts) == int(before_ts):
+            cur_ts = truncate(ts, 1)
+            bef_ts = truncate(before_ts, 1)
+
+            if cur_ts == bef_ts:
+                before_ts = ts
+                continue
+
+
         eth = dpkt.ethernet.Ethernet(pkt)
         ip = eth.data
         udp = ip.data
@@ -28,7 +46,7 @@ def sniffing(nicname):
 
         # 해당 mac address 키 값이 없을 경우 새로운 dataframe 생성 후 dict에 추가
         if mac not in mac_dict:
-            mac_dict[mac] = pd.DataFrame(columns=columns)
+            mac_dict[mac] = pd.DataFrame(columns=column)
 
         # Four Magic Byte + 6 Byte Mac Address + 2 Byte Sequence Number + 2 Byte Core and Spatial Stream Number + 2 Byte Chanspac + 2 Byte Chip Version 이후 CSI
         # 4 + 6 + 2 + 2 + 2 + 2 = 18 Byte 이후 CSI 데이터
@@ -68,6 +86,8 @@ def sniffing(nicname):
             mac_dict[mac] = pd.concat([mac_dict[mac], csi_df], ignore_index=True)
         except Exception as e:
             print('Error', e)
+
+        before_ts = ts
 
         if keyboard.is_pressed('s'):
             print("Stop Collecting...")
