@@ -15,7 +15,7 @@ def string_is_int(s):
         return False
 
 # Path
-data_path = 'data'
+data_path = '../data'
 data_fname = 'csi_data.csv'
 
 data_path = os.path.join(data_path, data_fname)

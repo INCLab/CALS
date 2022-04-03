@@ -1,16 +1,11 @@
+from database.tracking_db import tracking_db
 from sklearn.preprocessing import MinMaxScaler
-import os
 import numpy as np
 import pandas as pd
 import pywt
 
-# ========= Read Data =========
-data_path = 'data'
-csi_path = os.path.join(data_path, 'csi')
-mot_path = os.path.join(data_path, 'mot')
-
-
 # =========  CSI labeling  =========
+db = tracking_db()
 csi_label_list = []
 
 csi_datas = db.get_csi()
