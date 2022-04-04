@@ -190,7 +190,8 @@ for csi_file in csi_flist:
             elif start_time <= csi_time < end_time:
                 csi_label_list.append(plabel)
     csi_df['label'] = csi_label_list
-    print(csi_df)
+
+    csi_df.to_csv(os.path.join(out_path, 'labeled_csi_data_{}.csv'.format(mac)), index=False)
 
 
 # csi_df = db.get_csi_df()
