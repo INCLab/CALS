@@ -93,7 +93,7 @@ def sniffing(nicname):
             print("Stop Collecting...")
 
             for mac_address in mac_dict.keys():
-                mac_dict[mac_address].to_csv('csi_data_{}.csv'.format(mac_address))
+                mac_dict[mac_address].to_csv('csi_data_{}.csv'.format(mac_address), index=False)
             break
 
 
