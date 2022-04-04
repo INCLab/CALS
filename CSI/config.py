@@ -17,7 +17,7 @@ chip = 'bcm43455c0'  # Raspberry Pi 3B+ and 4B
 # Fileroot - Path to the directory with .pcap files
 # -------------------------------------------------
 
-pcap_fileroot = 'pcapfiles'
+pcap_fileroot = 'data'
 
 
 # Miscellaneous

@@ -25,7 +25,7 @@ if __name__ == "__main__":
     limit = 26000000
     count = 0
     timestamps = []
-    filename = "./pcapfiles/class_0.pcap"
+    filename = "../data/class_0.pcap"
 
     # Read pcap file and create dataframe
     try:
