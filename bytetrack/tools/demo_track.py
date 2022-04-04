@@ -1,3 +1,7 @@
+'''
+    run demo
+    python3 tools/demo_track.py video --fp16 --fuse --save_result
+'''
 import argparse
 import os
 import os.path as osp
@@ -28,7 +32,7 @@ def make_parser():
 
     parser.add_argument(
         #"--path", default="./datasets/mot/train/MOT17-05-FRCNN/img1", help="path to images or video"
-        "--path", default="./videos/palace.mp4", help="path to images or video"
+        "--path", default="./videos/ch01-20220112-140200-141700-101000000000.mp4", help="path to images or video"
     )
     parser.add_argument("--camid", type=int, default=0, help="webcam demo camera id")
     parser.add_argument(
@@ -41,11 +45,11 @@ def make_parser():
     parser.add_argument(
         "-f",
         "--exp_file",
-        default=None,
+        default="exps/example/mot/yolox_x_mix_det.py",
         type=str,
         help="pls input your expriment description file",
     )
-    parser.add_argument("-c", "--ckpt", default=None, type=str, help="ckpt for eval")
+    parser.add_argument("-c", "--ckpt", default="pretrained/bytetrack_x_mot17.pth.tar", type=str, help="ckpt for eval")
     parser.add_argument(
         "--device",
         default="gpu",
@@ -110,20 +114,6 @@ def start_time_from_fname(fname):
     start_ut = time.mktime(datetime.strptime(start_time, '%Y%m%d%H%M%S').timetuple())
 
     return start_ut
-
-
-def write_results(filename, results):
-    save_format = '{frame},{id},{x1},{y1},{w},{h},{s},-1,-1,-1\n'
-    with open(filename, 'w') as f:
-        print(filename)
-        for frame_id, tlwhs, track_ids, scores in results:
-            for tlwh, track_id, score in zip(tlwhs, track_ids, scores):
-                if track_id < 0:
-                    continue
-                x1, y1, w, h = tlwh
-                line = save_format.format(frame=frame_id, id=track_id, x1=round(x1, 1), y1=round(y1, 1), w=round(w, 1), h=round(h, 1), s=round(score, 2))
-                f.write(line)
-    logger.info('save results to {}'.format(filename))
 
 
 class Predictor(object):
@@ -265,6 +255,13 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
     timer = Timer()
     frame_id = 0
     results = []
+
+    # Todo: Add time
+    # Add time in result txt file
+    # args.path
+    # start_time_from_fname()
+
+
     while True:
         if frame_id % 20 == 0:
             logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
@@ -285,7 +282,8 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
                         online_ids.append(tid)
                         online_scores.append(t.score)
                         results.append(
-                            f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f},-1,-1,-1\n"
+                            #f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}\n"
+                            f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}\n"
                         )
                 timer.toc()
                 online_im = plot_tracking(
