@@ -1,6 +1,6 @@
 '''
     run demo
-    python3 tools/demo_track.py video --fp16 --fuse --save_result
+    python3 tools/demo_track.py --path ./videos/test -o ./output
 '''
 import argparse
 import os
@@ -8,6 +8,7 @@ import os.path as osp
 import time
 import cv2
 import torch
+import mimetypes
 
 from loguru import logger
 
@@ -25,18 +26,21 @@ IMAGE_EXT = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]
 def make_parser():
     parser = argparse.ArgumentParser("ByteTrack Demo!")
     parser.add_argument(
-        "demo", default="image", help="demo type, eg. image, video and webcam"
+        "--demo", default="video", help="demo type, eg. image, video and webcam"
     )
     parser.add_argument("-expn", "--experiment-name", type=str, default=None)
     parser.add_argument("-n", "--name", type=str, default=None, help="model name")
 
     parser.add_argument(
         #"--path", default="./datasets/mot/train/MOT17-05-FRCNN/img1", help="path to images or video"
-        "--path", default="./videos/ch01-20220112-140200-141700-101000000000.mp4", help="path to images or video"
+        "--path", default=None, help="path to images or video"
     )
+    parser.add_argument("-o", "--output", type=str, default='./output', help="output directory")
+
     parser.add_argument("--camid", type=int, default=0, help="webcam demo camera id")
     parser.add_argument(
         "--save_result",
+        default=True,
         action="store_true",
         help="whether to save the inference result of image/video",
     )
@@ -49,7 +53,7 @@ def make_parser():
         type=str,
         help="pls input your expriment description file",
     )
-    parser.add_argument("-c", "--ckpt", default="pretrained/bytetrack_x_mot17.pth.tar", type=str, help="ckpt for eval")
+    parser.add_argument("-c", "--ckpt", default="pretrained/bytetrack_x_mot20.tar", type=str, help="ckpt for eval")
     parser.add_argument(
         "--device",
         default="gpu",
@@ -83,6 +87,7 @@ def make_parser():
     )
     # tracking args
     parser.add_argument("--track_thresh", type=float, default=0.5, help="tracking confidence threshold")
+    # parser.add_argument("--track_thresh", type=float, default=0.25, help="tracking confidence threshold")
     parser.add_argument("--track_buffer", type=int, default=30, help="the frames for keep lost tracks")
     parser.add_argument("--match_thresh", type=float, default=0.8, help="matching threshold for tracking")
     parser.add_argument(
@@ -177,147 +182,158 @@ class Predictor(object):
         return outputs, img_info
 
 
-def image_demo(predictor, vis_folder, current_time, args):
-    if osp.isdir(args.path):
-        files = get_image_list(args.path)
-    else:
-        files = [args.path]
-    files.sort()
-    tracker = BYTETracker(args, frame_rate=args.fps)
-    timer = Timer()
-    results = []
-
-    for frame_id, img_path in enumerate(files, 1):
-        outputs, img_info = predictor.inference(img_path, timer)
-        if outputs[0] is not None:
-            online_targets = tracker.update(outputs[0], [img_info['height'], img_info['width']], exp.test_size)
-            online_tlwhs = []
-            online_ids = []
-            online_scores = []
-            for t in online_targets:
-                tlwh = t.tlwh
-                tid = t.track_id
-                vertical = tlwh[2] / tlwh[3] > args.aspect_ratio_thresh
-                if tlwh[2] * tlwh[3] > args.min_box_area and not vertical:
-                    online_tlwhs.append(tlwh)
-                    online_ids.append(tid)
-                    online_scores.append(t.score)
-                    # save results
-                    results.append(
-                        f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f},-1,-1,-1\n"
-                    )
-            timer.toc()
-            online_im = plot_tracking(
-                img_info['raw_img'], online_tlwhs, online_ids, frame_id=frame_id, fps=1. / timer.average_time
-            )
-        else:
-            timer.toc()
-            online_im = img_info['raw_img']
-
-        # result_image = predictor.visual(outputs[0], img_info, predictor.confthre)
-        if args.save_result:
-            timestamp = time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
-            save_folder = osp.join(vis_folder, timestamp)
-            os.makedirs(save_folder, exist_ok=True)
-            cv2.imwrite(osp.join(save_folder, osp.basename(img_path)), online_im)
-
-        if frame_id % 20 == 0:
-            logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
-
-        ch = cv2.waitKey(0)
-        if ch == 27 or ch == ord("q") or ch == ord("Q"):
-            break
-
-    if args.save_result:
-        res_file = osp.join(vis_folder, f"{timestamp}.txt")
-        with open(res_file, 'w') as f:
-            f.writelines(results)
-        logger.info(f"save results to {res_file}")
+# def image_demo(predictor, vis_folder, current_time, args):
+#     if osp.isdir(args.path):
+#         files = get_image_list(args.path)
+#     else:
+#         files = [args.path]
+#     files.sort()
+#     tracker = BYTETracker(args, frame_rate=args.fps)
+#     timer = Timer()
+#     results = []
+#
+#     for frame_id, img_path in enumerate(files, 1):
+#         outputs, img_info = predictor.inference(img_path, timer)
+#         if outputs[0] is not None:
+#             online_targets = tracker.update(outputs[0], [img_info['height'], img_info['width']], exp.test_size)
+#             online_tlwhs = []
+#             online_ids = []
+#             online_scores = []
+#             for t in online_targets:
+#                 tlwh = t.tlwh
+#                 tid = t.track_id
+#                 vertical = tlwh[2] / tlwh[3] > args.aspect_ratio_thresh
+#                 if tlwh[2] * tlwh[3] > args.min_box_area and not vertical:
+#                     online_tlwhs.append(tlwh)
+#                     online_ids.append(tid)
+#                     online_scores.append(t.score)
+#                     # save results
+#                     results.append(
+#                         f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f},-1,-1,-1\n"
+#                     )
+#             timer.toc()
+#             online_im = plot_tracking(
+#                 img_info['raw_img'], online_tlwhs, online_ids, frame_id=frame_id, fps=1. / timer.average_time
+#             )
+#         else:
+#             timer.toc()
+#             online_im = img_info['raw_img']
+#
+#         # result_image = predictor.visual(outputs[0], img_info, predictor.confthre)
+#         if args.save_result:
+#             timestamp = time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
+#             save_folder = osp.join(vis_folder, timestamp)
+#             os.makedirs(save_folder, exist_ok=True)
+#             cv2.imwrite(osp.join(save_folder, osp.basename(img_path)), online_im)
+#
+#         if frame_id % 20 == 0:
+#             logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
+#
+#         ch = cv2.waitKey(0)
+#         if ch == 27 or ch == ord("q") or ch == ord("Q"):
+#             break
+#
+#     if args.save_result:
+#         res_file = osp.join(vis_folder, f"{timestamp}.txt")
+#         with open(res_file, 'w') as f:
+#             f.writelines(results)
+#         logger.info(f"save results to {res_file}")
 
 
 def imageflow_demo(predictor, vis_folder, current_time, args):
-    cap = cv2.VideoCapture(args.path if args.demo == "video" else args.camid)
-    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
-    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    timestamp = time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
-    save_folder = osp.join(vis_folder, timestamp)
-    os.makedirs(save_folder, exist_ok=True)
-    if args.demo == "video":
-        save_path = osp.join(save_folder, args.path.split("/")[-1])
-    else:
-        save_path = osp.join(save_folder, "camera.mp4")
-    logger.info(f"video save_path is {save_path}")
-    vid_writer = cv2.VideoWriter(
-        save_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
-    )
-    tracker = BYTETracker(args, frame_rate=30)
-    timer = Timer()
-    frame_id = 0
-    results = []
+    videolist = os.listdir(args.path)
 
-    # Todo: Add time
-    # Add time in result txt file
-    # args.path
-    # start_time_from_fname()
+    for videofile in videolist:
+        # 이름과 확장자 분리
+        name, ext = os.path.splitext(videofile)
+
+        filemime = mimetypes.guess_type(videofile)[0]
+
+        # MIME Type이 Video인 경우
+        if filemime is not None and filemime.find('video') is not -1:
+            logger.info('\nProcess Video file name: {}'.format(videofile))
+            video_path = osp.join(args.path, videofile)
+
+            cap = cv2.VideoCapture(video_path if args.demo == "video" else args.camid)
+            width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
+            height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            save_path = osp.join(vis_folder, videofile)
+
+            logger.info(f"video save_path is {save_path}")
+            vid_writer = cv2.VideoWriter(
+                save_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
+            )
+            tracker = BYTETracker(args, frame_rate=30)
+            timer = Timer()
+            frame_id = 0
+            results = []
+
+            # Todo: Add time
+            # Add time in result txt file
+            # args.path
+            # start_time_from_fname()
 
 
-    while True:
-        if frame_id % 20 == 0:
-            logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
-        ret_val, frame = cap.read()
-        if ret_val:
-            outputs, img_info = predictor.inference(frame, timer)
-            if outputs[0] is not None:
-                online_targets = tracker.update(outputs[0], [img_info['height'], img_info['width']], exp.test_size)
-                online_tlwhs = []
-                online_ids = []
-                online_scores = []
-                for t in online_targets:
-                    tlwh = t.tlwh
-                    tid = t.track_id
-                    vertical = tlwh[2] / tlwh[3] > args.aspect_ratio_thresh
-                    if tlwh[2] * tlwh[3] > args.min_box_area and not vertical:
-                        online_tlwhs.append(tlwh)
-                        online_ids.append(tid)
-                        online_scores.append(t.score)
-                        results.append(
-                            #f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}\n"
-                            f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}\n"
+            while True:
+                if frame_id % 20 == 0:
+                    logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
+                ret_val, frame = cap.read()
+                if ret_val:
+                    outputs, img_info = predictor.inference(frame, timer)
+                    if outputs[0] is not None:
+                        online_targets = tracker.update(outputs[0], [img_info['height'], img_info['width']], exp.test_size)
+                        online_tlwhs = []
+                        online_ids = []
+                        online_scores = []
+                        for t in online_targets:
+                            tlwh = t.tlwh
+                            tid = t.track_id
+                            vertical = tlwh[2] / tlwh[3] > args.aspect_ratio_thresh
+                            if tlwh[2] * tlwh[3] > args.min_box_area and not vertical:
+                                online_tlwhs.append(tlwh)
+                                online_ids.append(tid)
+                                online_scores.append(t.score)
+
+                                # Calculate footprint (bottom-center of BBox)
+                                x_coord = int(tlwh[0] + (tlwh[2] / 2))
+                                y_coord = int(tlwh[1] + tlwh[3])
+
+                                results.append(
+                                    #f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}\n"
+                                    f"{frame_id} {tid} {x_coord} {y_coord}\n"
+                                )
+                        timer.toc()
+                        online_im = plot_tracking(
+                            img_info['raw_img'], online_tlwhs, online_ids, frame_id=frame_id + 1, fps=1. / timer.average_time
                         )
-                timer.toc()
-                online_im = plot_tracking(
-                    img_info['raw_img'], online_tlwhs, online_ids, frame_id=frame_id + 1, fps=1. / timer.average_time
-                )
-            else:
-                timer.toc()
-                online_im = img_info['raw_img']
-            if args.save_result:
-                vid_writer.write(online_im)
-            ch = cv2.waitKey(1)
-            if ch == 27 or ch == ord("q") or ch == ord("Q"):
-                break
-        else:
-            break
-        frame_id += 1
+                    else:
+                        timer.toc()
+                        online_im = img_info['raw_img']
+                    if args.save_result:
+                        vid_writer.write(online_im)
+                    ch = cv2.waitKey(1)
+                    if ch == 27 or ch == ord("q") or ch == ord("Q"):
+                        break
+                else:
+                    break
+                frame_id += 1
 
-    if args.save_result:
-        res_file = osp.join(vis_folder, f"{timestamp}.txt")
-        with open(res_file, 'w') as f:
-            f.writelines(results)
-        logger.info(f"save results to {res_file}")
+            if args.save_result:
+                txt_dir = osp.join(vis_folder, 'txt_output')
+                os.makedirs(txt_dir, exist_ok=True)
+                res_file = osp.join(txt_dir, f"{name}.txt")
+                with open(res_file, 'w') as f:
+                    f.writelines(results)
+                logger.info(f"save results to {res_file}")
 
 
 def main(exp, args):
     if not args.experiment_name:
         args.experiment_name = exp.exp_name
 
-    output_dir = osp.join(exp.output_dir, args.experiment_name)
+    output_dir = osp.join(args.output, args.path.split('/')[-1])
     os.makedirs(output_dir, exist_ok=True)
-
-    if args.save_result:
-        vis_folder = osp.join(output_dir, "track_vis")
-        os.makedirs(vis_folder, exist_ok=True)
 
     if args.trt:
         args.device = "gpu"
@@ -337,10 +353,7 @@ def main(exp, args):
     model.eval()
 
     if not args.trt:
-        if args.ckpt is None:
-            ckpt_file = osp.join(output_dir, "best_ckpt.pth.tar")
-        else:
-            ckpt_file = args.ckpt
+        ckpt_file = args.ckpt
         logger.info("loading checkpoint")
         ckpt = torch.load(ckpt_file, map_location="cpu")
         # load the model state dict
@@ -370,9 +383,9 @@ def main(exp, args):
     predictor = Predictor(model, exp, trt_file, decoder, args.device, args.fp16)
     current_time = time.localtime()
     if args.demo == "image":
-        image_demo(predictor, vis_folder, current_time, args)
+        image_demo(predictor, output_dir, current_time, args)
     elif args.demo == "video" or args.demo == "webcam":
-        imageflow_demo(predictor, vis_folder, current_time, args)
+        imageflow_demo(predictor, output_dir, current_time, args)
 
 
 if __name__ == "__main__":
