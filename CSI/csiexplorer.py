@@ -22,8 +22,11 @@ def string_is_int(s):
     except ValueError:
         return False
 
+
 # Path
-data_path = '../data/csi/'
+test_name = 'test3_3rasp'
+data_path = '../data'
+data_path = os.path.join(data_path, test_name, 'csi')
 csi_list = os.listdir(data_path)
 
 null_pilot_col_list = ['_' + str(x+32) for x in [-32, -31, -30, -29, -21, -7, 0, 7, 21, 29, 30, 31]]

@@ -9,12 +9,13 @@ import time
 TIME_THRESHOLD = 1
 
 # ========= Read Data =========
+test_name = 'test1'
 data_path = 'data'
-csi_path = os.path.join(data_path, 'csi')
-mot_path = os.path.join(data_path, 'mot')
+csi_path = os.path.join(data_path, test_name, 'csi')
+mot_path = os.path.join(data_path, test_name, 'mot')
 
 # ========= Output data path ========
-out_path = os.path.join(data_path, 'labeled')
+out_path = os.path.join(data_path, test_name,'labeled')
 
 # =========  Create file list  =========
 csi_flist = os.listdir(csi_path)
