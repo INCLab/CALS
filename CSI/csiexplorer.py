@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-from plot.ampPlotter import AmpPlotter
+from plot.ampPlotter import AmpPlotter, AmpTimePlotter
 from plot.heatmap import heatmap
 
 '''
@@ -24,7 +24,7 @@ def string_is_int(s):
 
 
 # Path
-test_name = 'test3_3rasp'
+test_name = 'test1'
 data_path = '../data'
 data_path = os.path.join(data_path, test_name, 'csi')
 csi_list = os.listdir(data_path)
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     csi_df.drop(null_pilot_col_list, axis=1, inplace=True)
 
     while True:
-        plot_mode = input('1. Amplitude plot, 2.Heatmap, 3.Exit: ')
+        plot_mode = input('1.Amplitude-SampleNum plot 2.Amplitude-Time plot 3.Heatmap, 4.Exit: ')
 
         if plot_mode == '1':
             # select specific subcarrier
@@ -85,8 +85,23 @@ if __name__ == "__main__":
                 AmpPlotter(csi_df, s_start, s_end)
             else:
                 print("Wrong input!")
-
         elif plot_mode == '2':
+            # select specific subcarrier
+            spf_subc = input('Select specific subcarrier(True or False):  ')
+
+            if spf_subc == 'True':
+                spf_sub_idx = input('Select one subcarrier {}:  '.format(csi_df.columns))
+
+                while spf_sub_idx not in csi_df.columns:
+                    print("Wrong input!")
+                    spf_sub_idx = input('Select one subcarrier {}:  '.format(csi_df.columns))
+
+                AmpTimePlotter(csi_df, s_start, s_end, spf_sub_idx)
+            elif spf_subc == 'False':
+                AmpTimePlotter(csi_df, s_start, s_end)
+            else:
+                print("Wrong input!")
+        elif plot_mode == '3':
             pre = input('Data Preprocessing (True or False):  ')
 
             if pre == 'True':
@@ -96,7 +111,7 @@ if __name__ == "__main__":
             else:
                 print("Wrong input!")
 
-        elif plot_mode == '3':
+        elif plot_mode == '4':
             break
         else:
             print('Unknown command.')
