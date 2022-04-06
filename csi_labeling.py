@@ -15,7 +15,8 @@ csi_path = os.path.join(data_path, test_name, 'csi')
 mot_path = os.path.join(data_path, test_name, 'mot')
 
 # ========= Output data path ========
-out_path = os.path.join(data_path, test_name,'labeled')
+out_path = os.path.join(data_path, test_name, 'labeled')
+os.makedirs(out_path, exist_ok=True)
 
 # =========  Create file list  =========
 csi_flist = os.listdir(csi_path)
