@@ -13,17 +13,22 @@ from plot.heatmap import heatmap
 '''
 # For Test time section, set milestone
 time_ms_list = [
-    # Test3_3rasp
-    '2022-04-06 17:00:00',  # Start
-    '2022-04-06 17:01:00',  # Leave Left-Bottom
-    '2022-04-06 17:01:04',  # Arrive Middle-Top
-    '2022-04-06 17:02:01',  # Leave Middle-Top
-    '2022-04-06 17:02:04',  # Arrive Right-Bottom
-    '2022-04-06 17:03:07',  # End
+    # ######### Test1 ###########
+
+    # ######### Test2 ###########
+
+    # ######### Test3_3rasp ###########
+    
+    # '2022-04-06 17:00:00',  # Start
+    # '2022-04-06 17:01:00',  # Leave Left-Bottom
+    # '2022-04-06 17:01:04',  # Arrive Middle-Top
+    # '2022-04-06 17:02:01',  # Leave Middle-Top
+    # '2022-04-06 17:02:04',  # Arrive Right-Bottom
+    # '2022-04-06 17:03:07',  # End
 ]
 
 # Path
-test_name = 'test3_3rasp'
+test_name = 'test1'
 data_path = '../data'
 data_path = os.path.join(data_path, test_name, 'csi')
 csi_list = os.listdir(data_path)
