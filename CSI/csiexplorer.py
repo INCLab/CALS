@@ -11,20 +11,19 @@ from plot.heatmap import heatmap
     
     Available number of subcarriers: 64-12 = 52
 '''
-
-def string_is_int(s):
-    '''
-    Check if a string is an integer
-    '''
-    try:
-        int(s)
-        return True
-    except ValueError:
-        return False
-
+# For Test time section, set milestone
+time_ms_list = [
+    # Test3_3rasp
+    '2022-04-06 17:00:00',  # Start
+    '2022-04-06 17:01:00',  # Leave Left-Bottom
+    '2022-04-06 17:01:04',  # Arrive Middle-Top
+    '2022-04-06 17:02:01',  # Leave Middle-Top
+    '2022-04-06 17:02:04',  # Arrive Right-Bottom
+    '2022-04-06 17:03:07',  # End
+]
 
 # Path
-test_name = 'test1'
+test_name = 'test3_3rasp'
 data_path = '../data'
 data_path = os.path.join(data_path, test_name, 'csi')
 csi_list = os.listdir(data_path)
@@ -61,7 +60,12 @@ if __name__ == "__main__":
 
     # Read csi.csv
     df = pd.read_csv(data_path)
-    csi_df = df.iloc[:, 3:]
+
+    # Remove MAC address, timestamp
+    csi_df = df.iloc[:, 2:]
+
+    # Create timestamp list
+    time_list = df['time'].tolist()
 
     # Remove null & pilot subcarriers
     csi_df.drop(null_pilot_col_list, axis=1, inplace=True)
@@ -96,9 +100,9 @@ if __name__ == "__main__":
                     print("Wrong input!")
                     spf_sub_idx = input('Select one subcarrier {}:  '.format(csi_df.columns))
 
-                AmpTimePlotter(csi_df, s_start, s_end, spf_sub_idx)
+                AmpTimePlotter(csi_df, time_list, time_ms_list, spf_sub_idx)
             elif spf_subc == 'False':
-                AmpTimePlotter(csi_df, s_start, s_end)
+                AmpTimePlotter(csi_df, time_list, time_ms_list)
             else:
                 print("Wrong input!")
         elif plot_mode == '3':
