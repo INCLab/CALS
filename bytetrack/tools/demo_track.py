@@ -4,6 +4,7 @@
 
     --fps: default 30
     --ef: extract frame type boolean
+    --at: add time default True
 '''
 import argparse
 import os
@@ -41,6 +42,7 @@ def make_parser():
     parser.add_argument("-o", "--output", type=str, default='./output', help="output directory")
 
     parser.add_argument("--ef", type=bool, default=True, help="extract frame")
+    parser.add_argument("--at", type=bool, default=True, help="add Unix Time on Output txt file")
 
     parser.add_argument("--camid", type=int, default=0, help="webcam demo camera id")
     parser.add_argument(
@@ -310,10 +312,15 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
 
                                 frame_ut = start_ut + ((frame_id + 1) / args.fps)
 
-                                results.append(
-                                    #f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}\n"
-                                    f"{frame_ut} {frame_id + 1} {tid} {x_coord} {y_coord}\n"
-                                )
+                                if args.at:
+                                    results.append(
+                                        #f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}\n"
+                                        f"{frame_ut} {frame_id + 1} {tid} {x_coord} {y_coord}\n"
+                                    )
+                                else:
+                                    results.append(
+                                        f"{frame_id + 1} {tid} {x_coord} {y_coord}\n"
+                                    )
                         timer.toc()
                         online_im = plot_tracking(
                             img_info['raw_img'], online_tlwhs, online_ids, frame_id=frame_id + 1, fps=1. / timer.average_time
