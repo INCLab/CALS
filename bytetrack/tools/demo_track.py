@@ -23,6 +23,7 @@ from yolox.utils.visualize import plot_tracking
 from yolox.tracker.byte_tracker import BYTETracker
 from yolox.tracking_utils.timer import Timer
 
+total_testset = 20
 
 IMAGE_EXT = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]
 
@@ -247,8 +248,8 @@ class Predictor(object):
 #         logger.info(f"save results to {res_file}")
 
 
-def imageflow_demo(predictor, vis_folder, current_time, args):
-    videolist = os.listdir(args.path)
+def imageflow_demo(predictor, vis_folder, current_time, args, test_num):
+    videolist = os.listdir(osp.join(args.path, str(test_num)))
 
     for videofile in videolist:
         # 이름과 확장자 분리
@@ -259,7 +260,7 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
         # MIME Type이 Video인 경우
         if filemime is not None and filemime.find('video') is not -1:
             logger.info('\nProcess Video file name: {}'.format(videofile))
-            video_path = osp.join(args.path, videofile)
+            video_path = osp.join(args.path, str(test_num), videofile)
 
             cap = cv2.VideoCapture(video_path if args.demo == "video" else args.camid)
             width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
@@ -355,60 +356,61 @@ def main(exp, args):
     if not args.experiment_name:
         args.experiment_name = exp.exp_name
 
-    output_dir = osp.join(args.output, args.path.split('/')[-1])
-    os.makedirs(output_dir, exist_ok=True)
+    for i in range(1, total_testset+1):
+        output_dir = osp.join(args.output, str(i))
+        os.makedirs(output_dir, exist_ok=True)
 
-    if args.trt:
-        args.device = "gpu"
-    args.device = torch.device("cuda" if args.device == "gpu" else "cpu")
+        if args.trt:
+            args.device = "gpu"
+        args.device = torch.device("cuda" if args.device == "gpu" else "cpu")
 
-    logger.info("Args: {}".format(args))
+        logger.info("Args: {}".format(args))
 
-    if args.conf is not None:
-        exp.test_conf = args.conf
-    if args.nms is not None:
-        exp.nmsthre = args.nms
-    if args.tsize is not None:
-        exp.test_size = (args.tsize, args.tsize)
+        if args.conf is not None:
+            exp.test_conf = args.conf
+        if args.nms is not None:
+            exp.nmsthre = args.nms
+        if args.tsize is not None:
+            exp.test_size = (args.tsize, args.tsize)
 
-    model = exp.get_model().to(args.device)
-    logger.info("Model Summary: {}".format(get_model_info(model, exp.test_size)))
-    model.eval()
+        model = exp.get_model().to(args.device)
+        logger.info("Model Summary: {}".format(get_model_info(model, exp.test_size)))
+        model.eval()
 
-    if not args.trt:
-        ckpt_file = args.ckpt
-        logger.info("loading checkpoint")
-        ckpt = torch.load(ckpt_file, map_location="cpu")
-        # load the model state dict
-        model.load_state_dict(ckpt["model"])
-        logger.info("loaded checkpoint done.")
+        if not args.trt:
+            ckpt_file = args.ckpt
+            logger.info("loading checkpoint")
+            ckpt = torch.load(ckpt_file, map_location="cpu")
+            # load the model state dict
+            model.load_state_dict(ckpt["model"])
+            logger.info("loaded checkpoint done.")
 
-    if args.fuse:
-        logger.info("\tFusing model...")
-        model = fuse_model(model)
+        if args.fuse:
+            logger.info("\tFusing model...")
+            model = fuse_model(model)
 
-    if args.fp16:
-        model = model.half()  # to FP16
+        if args.fp16:
+            model = model.half()  # to FP16
 
-    if args.trt:
-        assert not args.fuse, "TensorRT model is not support model fusing!"
-        trt_file = osp.join(output_dir, "model_trt.pth")
-        assert osp.exists(
-            trt_file
-        ), "TensorRT model is not found!\n Run python3 tools/trt.py first!"
-        model.head.decode_in_inference = False
-        decoder = model.head.decode_outputs
-        logger.info("Using TensorRT to inference")
-    else:
-        trt_file = None
-        decoder = None
+        if args.trt:
+            assert not args.fuse, "TensorRT model is not support model fusing!"
+            trt_file = osp.join(output_dir, "model_trt.pth")
+            assert osp.exists(
+                trt_file
+            ), "TensorRT model is not found!\n Run python3 tools/trt.py first!"
+            model.head.decode_in_inference = False
+            decoder = model.head.decode_outputs
+            logger.info("Using TensorRT to inference")
+        else:
+            trt_file = None
+            decoder = None
 
-    predictor = Predictor(model, exp, trt_file, decoder, args.device, args.fp16)
-    current_time = time.localtime()
-    if args.demo == "image":
-        image_demo(predictor, output_dir, current_time, args)
-    elif args.demo == "video" or args.demo == "webcam":
-        imageflow_demo(predictor, output_dir, current_time, args)
+        predictor = Predictor(model, exp, trt_file, decoder, args.device, args.fp16)
+        current_time = time.localtime()
+        if args.demo == "image":
+            image_demo(predictor, output_dir, current_time, args)
+        elif args.demo == "video" or args.demo == "webcam":
+            imageflow_demo(predictor, output_dir, current_time, args, i)
 
 
 if __name__ == "__main__":
