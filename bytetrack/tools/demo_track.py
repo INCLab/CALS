@@ -42,7 +42,7 @@ def make_parser():
     parser.add_argument("-o", "--output", type=str, default='./output', help="output directory")
 
     parser.add_argument("--ef", type=bool, default=True, help="extract frame")
-    parser.add_argument("--at", type=bool, default=True, help="add Unix Time on Output txt file")
+    parser.add_argument("--at", type=bool, default=False, help="add Unix Time on Output txt file")
 
     parser.add_argument("--camid", type=int, default=0, help="webcam demo camera id")
     parser.add_argument(
@@ -265,7 +265,7 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
             width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
             height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
             fps = cap.get(cv2.CAP_PROP_FPS)
-            save_path = osp.join(vis_folder, videofile)
+            save_path = osp.join(vis_folder, 'mot_' + videofile)
 
             logger.info(f"video save_path is {save_path}")
 
@@ -285,6 +285,7 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
 
             # Start Unix Time from mot txt file
             start_ut = 0
+
             if args.at:
                 start_ut = start_time_from_fname(videofile)
 
@@ -329,9 +330,10 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
                     else:
                         timer.toc()
                         online_im = img_info['raw_img']
+
+                    if args.ef:
+                        cv2.imwrite(osp.join(frame_save_path, str(frame_id) + '.jpg'), online_im)
                     if args.save_result:
-                        if args.ef:
-                            cv2.imwrite(frame_save_path, online_im)
                         vid_writer.write(online_im)
                     ch = cv2.waitKey(1)
                     if ch == 27 or ch == ord("q") or ch == ord("Q"):
@@ -341,7 +343,7 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
                 frame_id += 1
 
             if args.save_result:
-                txt_dir = osp.join(vis_folder, 'txt_output')
+                txt_dir = osp.join(vis_folder)
                 os.makedirs(txt_dir, exist_ok=True)
                 res_file = osp.join(txt_dir, f"{name}.txt")
                 with open(res_file, 'w') as f:
