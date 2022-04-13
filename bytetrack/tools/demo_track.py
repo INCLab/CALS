@@ -309,10 +309,9 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
                                 # Calculate footprint (bottom-center of BBox)
                                 x_coord = int(tlwh[0] + (tlwh[2] / 2))
                                 y_coord = int(tlwh[1] + tlwh[3])
-
-                                frame_ut = start_ut + ((frame_id + 1) / args.fps)
-
+                        
                                 if args.at:
+                                    frame_ut = start_ut + ((frame_id + 1) / args.fps)
                                     results.append(
                                         #f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}\n"
                                         f"{frame_ut} {frame_id + 1} {tid} {x_coord} {y_coord}\n"
