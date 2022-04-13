@@ -14,6 +14,7 @@ from plot.heatmap import heatmap, timeHeatmap
 # For Test time section, set milestone
 time_ms_list = [
     # ######### Test1 ###########
+
     # '2022-04-06 13:55:40',  # Start
     # '2022-04-06 13:55:47',  # Leave Left-Bottom
     # '2022-04-06 13:55:53',  # Arrive Right-Top
@@ -22,6 +23,7 @@ time_ms_list = [
     # '2022-04-06 13:56:07',  # End
 
     # ######### Test2 ###########
+
     # '2022-04-06 16:46:14',  # Start
     # '2022-04-06 16:46:32',  # Leave Left-Bottom
     # '2022-04-06 16:46:36',  # Arrive Right-Top
@@ -40,7 +42,7 @@ time_ms_list = [
 ]
 
 # Path
-test_name = 'test3_3rasp'
+test_name = 'csi_4rasp_test'
 data_path = '../data'
 data_path = os.path.join(data_path, test_name, 'csi')
 csi_list = os.listdir(data_path)

@@ -1,6 +1,9 @@
 '''
     run demo
     python3 tools/demo_track.py --path ./videos/test -o ./output
+
+    --fps: default 30
+    --ef: extract frame type boolean
 '''
 import argparse
 import os
@@ -36,6 +39,8 @@ def make_parser():
         "--path", default=None, help="path to images or video"
     )
     parser.add_argument("-o", "--output", type=str, default='./output', help="output directory")
+
+    parser.add_argument("--ef", type=bool, default=True, help="extract frame")
 
     parser.add_argument("--camid", type=int, default=0, help="webcam demo camera id")
     parser.add_argument(
@@ -261,6 +266,13 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
             save_path = osp.join(vis_folder, videofile)
 
             logger.info(f"video save_path is {save_path}")
+
+            # Create Frame save dir
+            frame_save_path = osp.join(vis_folder, 'frame', name)
+            if args.ef:
+                os.makedirs(frame_save_path, exist_ok=True)
+                logger.info(f"frame save_path is {frame_save_path}")
+
             vid_writer = cv2.VideoWriter(
                 save_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
             )
@@ -310,6 +322,8 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
                         timer.toc()
                         online_im = img_info['raw_img']
                     if args.save_result:
+                        if args.ef:
+                            cv2.imwrite(frame_save_path, online_im)
                         vid_writer.write(online_im)
                     ch = cv2.waitKey(1)
                     if ch == 27 or ch == ord("q") or ch == ord("Q"):

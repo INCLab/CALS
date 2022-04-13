@@ -24,7 +24,6 @@ def heatmap(csi_df, sample_start, sample_end, preprocess=False):
 
     x_list = []
     for idx in packet_idx:
-        # x_list.append(idx / 150)
         x_list.append(idx)
 
     y_list = []
@@ -41,7 +40,6 @@ def heatmap(csi_df, sample_start, sample_end, preprocess=False):
 
     plt.xticks(xtic)
     plt.yticks(ytic, [y_list[idx] for idx in [0, int(len(y_list)/4), int(len(y_list)/4*2), int(len(y_list)/4*3)]])
-    #plt.xlabel('Time (s)')
     plt.xlabel('Packet Index')
     plt.ylabel('Subcarrier Index')
 
