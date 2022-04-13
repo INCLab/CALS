@@ -3,8 +3,8 @@
     python3 tools/demo_track.py --path ./videos/test -o ./output
 
     --fps: default 30
-    --ef: extract frame type boolean
-    --at: add time default True
+    --ef: extract frame type boolean default True
+    --at: add time default False
 '''
 import argparse
 import os
