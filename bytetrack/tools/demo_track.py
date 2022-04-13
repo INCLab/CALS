@@ -284,7 +284,9 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
             results = []
 
             # Start Unix Time from mot txt file
-            start_ut = start_time_from_fname(videofile)
+            start_ut = 0
+            if args.at:
+                start_ut = start_time_from_fname(videofile)
 
             while True:
                 if frame_id % 20 == 0:
@@ -309,7 +311,7 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
                                 # Calculate footprint (bottom-center of BBox)
                                 x_coord = int(tlwh[0] + (tlwh[2] / 2))
                                 y_coord = int(tlwh[1] + tlwh[3])
-                        
+
                                 if args.at:
                                     frame_ut = start_ut + ((frame_id + 1) / args.fps)
                                     results.append(
