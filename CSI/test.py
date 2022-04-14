@@ -9,45 +9,47 @@ from matplotlib.animation import FuncAnimation
 import time
 from datetime import datetime
 
-global xval
-xval = 0
-
 
 def AmpRTPlotter(csi_df, spf_sub=None):
-    global xval
-
     subcarrier_list = []
     for col in csi_df.columns:
         subcarrier_list.append(csi_df[col].to_list())
-    x = [1]
-    y_list = [[1] for i in range(0, len(subcarrier_list))]
+
+
+    x = np.arange(0, 100, 1)
+    y_list = []
+
+    for i in range(0, len(subcarrier_list)):
+        y_list.append([subcarrier_list[i][j] for j in range(0, 100)])
 
     plt.ion()
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    ax_list = []
 
-    for idx, y in enumerate(y_list):
-       line = ax.plot(x,y, alpha=0.5)
+    line_list = []
+
+    for y in y_list:
+        line, = ax.plot(x, y, alpha=0.5)
+        line_list.append(line)
 
     plt.ylabel('Signal Amplitude', fontsize=16)
     plt.xlabel('Packet', fontsize=16)
 
-    for l in range(0, 200):
-        x.append(xval)
-        for j in range(0, len(subcarrier_list)):
-            y_list[j].append(subcarrier_list[j][xval])
+    idx = 99
+    for l in range(0, 100):
+        idx += 1
+        for i, y in enumerate(y_list):
+            del y[0]
+            y.append(subcarrier_list[i][idx])
 
-        for idx, y in enumerate(y_list):
-            ax_list[idx].set_xdata(x)
-            ax_list[idx].set_ydata(y)
+        for i, line in enumerate(line_list):
+            line.set_xdata(x)
+            line.set_ydata(y_list[i])
 
         fig.canvas.draw()
         fig.canvas.flush_events()
+
         time.sleep(0.1)
-
-        xval += 1
-
 
 
 if __name__ == '__main__':
