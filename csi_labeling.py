@@ -9,7 +9,7 @@ import time
 TIME_THRESHOLD = 1
 
 # ========= Read Data =========
-test_name = 'test1'
+test_name = 'test3_3rasp'
 data_path = 'data'
 csi_path = os.path.join(data_path, test_name, 'csi')
 mot_path = os.path.join(data_path, test_name, 'mot')
