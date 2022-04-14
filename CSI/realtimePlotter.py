@@ -38,7 +38,8 @@ def AmpRTPlotter(csi_df, spf_sub=None):
         x = []
         y_list = [[] for i in range(0, len(subcarrier_list))]
 
-        def animate(i):
+        def animate(frame):
+
             # 100packet 이상 넘어가면 맨 앞 packet 제거
             if len(x) > 100:
                 del x[0]
@@ -54,13 +55,13 @@ def AmpRTPlotter(csi_df, spf_sub=None):
                 plt.plot(x, y, alpha=0.5, label=csi_df.columns[idx])
 
             plt.ylabel('Signal Amplitude', fontsize=16)
-            plt.xlabel('Time', fontsize=16)
+            plt.xlabel('Packet', fontsize=16)
             plt.tight_layout()
             xval += 1
 
 
-        ani = FuncAnimation(plt.gcf(), animate, interval=10)
-        # ani.save(r'csi.gif', fps=10)
+        ani = FuncAnimation(plt.gcf(), animate, interval=10, frames=240, repeat=False)
+        #ani.save(r'csi.gif', fps=10)
 
         plt.tight_layout()
         plt.show()
