@@ -1,6 +1,10 @@
 '''
     run demo
     python3 tools/demo_track.py --path ./videos/test -o ./output
+
+    --fps: default 30
+    --ef: extract frame type boolean default True
+    --at: add time default False
 '''
 import argparse
 import os
@@ -36,6 +40,9 @@ def make_parser():
         "--path", default=None, help="path to images or video"
     )
     parser.add_argument("-o", "--output", type=str, default='./output', help="output directory")
+
+    parser.add_argument("--ef", type=bool, default=True, help="extract frame")
+    parser.add_argument("--at", type=bool, default=False, help="add Unix Time on Output txt file")
 
     parser.add_argument("--camid", type=int, default=0, help="webcam demo camera id")
     parser.add_argument(
@@ -258,9 +265,16 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
             width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
             height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
             fps = cap.get(cv2.CAP_PROP_FPS)
-            save_path = osp.join(vis_folder, videofile)
+            save_path = osp.join(vis_folder, 'mot_' + videofile)
 
             logger.info(f"video save_path is {save_path}")
+
+            # Create Frame save dir
+            frame_save_path = osp.join(vis_folder, 'frame', name)
+            if args.ef:
+                os.makedirs(frame_save_path, exist_ok=True)
+                logger.info(f"frame save_path is {frame_save_path}")
+
             vid_writer = cv2.VideoWriter(
                 save_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
             )
@@ -270,7 +284,10 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
             results = []
 
             # Start Unix Time from mot txt file
-            start_ut = start_time_from_fname(videofile)
+            start_ut = 0
+
+            if args.at:
+                start_ut = start_time_from_fname(videofile)
 
             while True:
                 if frame_id % 20 == 0:
@@ -296,12 +313,16 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
                                 x_coord = int(tlwh[0] + (tlwh[2] / 2))
                                 y_coord = int(tlwh[1] + tlwh[3])
 
-                                frame_ut = start_ut + ((frame_id + 1) / args.fps)
-
-                                results.append(
-                                    #f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}\n"
-                                    f"{frame_ut} {frame_id + 1} {tid} {x_coord} {y_coord}\n"
-                                )
+                                if args.at:
+                                    frame_ut = start_ut + ((frame_id + 1) / args.fps)
+                                    results.append(
+                                        #f"{frame_id},{tid},{tlwh[0]:.2f},{tlwh[1]:.2f},{tlwh[2]:.2f},{tlwh[3]:.2f},{t.score:.2f}\n"
+                                        f"{frame_ut} {frame_id + 1} {tid} {x_coord} {y_coord}\n"
+                                    )
+                                else:
+                                    results.append(
+                                        f"{frame_id + 1} {tid} {x_coord} {y_coord}\n"
+                                    )
                         timer.toc()
                         online_im = plot_tracking(
                             img_info['raw_img'], online_tlwhs, online_ids, frame_id=frame_id + 1, fps=1. / timer.average_time
@@ -309,6 +330,9 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
                     else:
                         timer.toc()
                         online_im = img_info['raw_img']
+
+                    if args.ef:
+                        cv2.imwrite(osp.join(frame_save_path, str(frame_id) + '.jpg'), online_im)
                     if args.save_result:
                         vid_writer.write(online_im)
                     ch = cv2.waitKey(1)
@@ -319,7 +343,7 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
                 frame_id += 1
 
             if args.save_result:
-                txt_dir = osp.join(vis_folder, 'txt_output')
+                txt_dir = osp.join(vis_folder)
                 os.makedirs(txt_dir, exist_ok=True)
                 res_file = osp.join(txt_dir, f"{name}.txt")
                 with open(res_file, 'w') as f:
