@@ -4,12 +4,15 @@ import keyboard
 import pandas as pd
 import numpy as np
 import os
+import sys
 from datetime import datetime
 import time
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from multiprocessing import Process
 from matplotlib.artist import Artist
+
+#selected_mac = sys.argv[1]
 
 # : 제외
 selected_mac = 'dca6328e1dcb'
@@ -146,6 +149,7 @@ def sniffing(nicname, mac_address):
         if keyboard.is_pressed('s'):
             print("Stop Collecting...")
             exit()
+
 
 if __name__ == '__main__':
     sniffing('wlan0', selected_mac)
