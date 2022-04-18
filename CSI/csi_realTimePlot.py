@@ -9,6 +9,7 @@ import time
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from multiprocessing import Process
+from matplotlib.artist import Artist
 
 # : 제외
 selected_mac = 'dca6328e1dcb'
@@ -46,6 +47,7 @@ def sniffing(nicname, mac_address):
         line, = ax.plot(x, y, alpha=0.5)
         line_list.append(line)
 
+    plt.title('{}'.format(selected_mac), fontsize=18)
     plt.ylabel('Signal Amplitude', fontsize=16)
     plt.xlabel('Packet', fontsize=16)
     plt.ylim(0, 1500)
