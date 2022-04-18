@@ -1,7 +1,7 @@
 import socket
 
-HOST = '221.148.100.5'
-PORT = 9009
+HOST = '127.0.0.1'
+PORT = 9999
 
 
 def getFileFromServer(filename):

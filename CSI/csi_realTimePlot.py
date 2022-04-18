@@ -13,6 +13,7 @@ from multiprocessing import Process
 # : 제외
 selected_mac = 'dca6328e1dcb'
 show_packet_length = 100
+GAP_PACKET_NUM = 20
 
 
 # for sampling
@@ -48,6 +49,12 @@ def sniffing(nicname, mac_address):
     plt.ylabel('Signal Amplitude', fontsize=16)
     plt.xlabel('Packet', fontsize=16)
     plt.ylim(0, 1500)
+
+    # Amp Min-Max gap text on plot figure
+    txt = ax.text(40, 1600, 'Amp Min-Max Gap: None', fontsize=14)
+    gap_count = 0
+    minmax = []
+
     idx = show_packet_length - 1
     # ####################################################
 
@@ -100,9 +107,34 @@ def sniffing(nicname, mac_address):
         idx += 1
         for i, y in enumerate(y_list):
             del y[0]
-            y.append(csi_data[i])
+            new_y = csi_data[i]
+            y.append(new_y)
             line_list[i].set_xdata(x)
             line_list[i].set_ydata(y)
+
+            # Min-Max Gap
+            if gap_count == 0:
+                minmax.append([new_y, new_y])
+            else:
+                # Update min
+                if minmax[i][0] > new_y:
+                    minmax[i][0] = new_y
+                # Update max
+                if minmax[i][1] < new_y:
+                    minmax[i][1] = new_y
+
+        gap_list = []
+        for mm in minmax:
+            gap_list.append(mm[1] - mm[0])
+
+        gap = max(gap_list)
+
+        Artist.remove(txt)
+        txt = ax.text(40, 1600, 'Amp Min-Max Gap: {}'.format(gap), fontsize=14)
+        gap_count += 1
+        if gap_count == 20:
+            gap_count = 0
+            minmax = []
 
         fig.canvas.draw()
         fig.canvas.flush_events()
