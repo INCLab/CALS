@@ -17,7 +17,7 @@ from matplotlib.artist import Artist
 BANDWIDTH = 20
 
 # number of subcarrier
-NSUB = BANDWIDTH * 3.2
+NSUB = int(BANDWIDTH * 3.2)
 
 # : 제외
 selected_mac = 'dca6328e1dcb'

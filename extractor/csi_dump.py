@@ -15,7 +15,7 @@ import time
 BANDWIDTH = 20
 
 # number of subcarrier
-NSUB = BANDWIDTH * 3.2
+NSUB = int(BANDWIDTH * 3.2)
 
 
 # for sampling

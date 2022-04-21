@@ -17,7 +17,7 @@ from matplotlib.artist import Artist
 BANDWIDTH = 20
 
 # number of subcarrier
-NSUB = BANDWIDTH * 3.2
+NSUB = int(BANDWIDTH * 3.2)
 
 # : 제외
 selected_mac = 'dca6328e1dcb'
@@ -58,10 +58,10 @@ def sniffing(nicname, mac_address):
     plt.title('{}'.format(selected_mac), fontsize=18)
     plt.ylabel('Signal Phase', fontsize=16)
     plt.xlabel('Packet', fontsize=16)
-    plt.ylim(0, 1500)
+    plt.ylim(-300, 300)
 
     # Amp Min-Max gap text on plot figure
-    txt = ax.text(40, 1600, 'Amp Min-Max Gap: None', fontsize=14)
+    txt = ax.text(60, 400, 'Amp Min-Max Gap: None', fontsize=14)
     gap_count = 0
     minmax = []
 
@@ -140,7 +140,7 @@ def sniffing(nicname, mac_address):
         gap = max(gap_list)
 
         Artist.remove(txt)
-        txt = ax.text(40, 1600, 'Phase Min-Max Gap: {}'.format(gap), fontsize=14)
+        txt = ax.text(60, 400, 'Phase Min-Max Gap: {}'.format(gap), fontsize=14)
         gap_count += 1
         if gap_count == 20:
             gap_count = 0
