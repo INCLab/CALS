@@ -14,6 +14,11 @@ from matplotlib.artist import Artist
 
 #selected_mac = sys.argv[1]
 
+BANDWIDTH = 20
+
+# number of subcarrier
+NSUB = BANDWIDTH * 3.2
+
 # : 제외
 selected_mac = 'dca6328e1dcb'
 show_packet_length = 100
@@ -37,7 +42,7 @@ def sniffing(nicname, mac_address):
     x = np.arange(0, show_packet_length, 1)
     y_list = []
 
-    for i in range(0, 64):
+    for i in range(0, NSUB):
         y_list.append([0 for j in range(0, show_packet_length)])
 
     plt.ion()

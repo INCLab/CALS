@@ -66,7 +66,7 @@ def sniffing(nicname):
                 csi_np[:1, ::2] + 1.j * csi_np[:1, 1::2], axes=(1,)
             )
 
-            csi_data = str(mac) + ' '.join(list(np.abs(csi_cmplx)[0]))
+            csi_data = str(mac) + ' '.join(list(csi_cmplx[0]))
 
             try:
                 sock.connect((HOST, PORT))
