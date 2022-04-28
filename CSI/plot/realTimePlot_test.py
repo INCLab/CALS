@@ -80,7 +80,7 @@ def AmpRTPlotter(csi_df, spf_sub=None):
         fig.canvas.draw()
         fig.canvas.flush_events()
 
-        time.sleep(0.001)
+        time.sleep(1)
 
 
 if __name__ == '__main__':

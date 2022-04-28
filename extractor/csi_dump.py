@@ -68,8 +68,8 @@ def sniffing(nicname):
         # Convert CSI bytes to numpy array
         csi_np = np.frombuffer(
             csi,
-            dtype = np.int16,
-            count = nsub * 2
+            dtype=np.int16,
+            count=nsub * 2
         )
 
         # Cast numpy 1-d array to matrix
