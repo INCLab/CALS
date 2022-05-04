@@ -4,7 +4,7 @@
 
     --fps: default 30
     --ef: extract frame type boolean default True
-    --at: add time default False
+    --at: add time default True
 '''
 import argparse
 import os
@@ -15,7 +15,7 @@ import torch
 import mimetypes
 
 from loguru import logger
-from datetime import datetime
+
 from yolox.data.data_augment import preproc
 from yolox.exp import get_exp
 from yolox.utils import fuse_model, get_model_info, postprocess
@@ -23,8 +23,21 @@ from yolox.utils.visualize import plot_tracking
 from yolox.tracker.byte_tracker import BYTETracker
 from yolox.tracking_utils.timer import Timer
 
+from datetime import datetime
 
 IMAGE_EXT = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 
 
 def make_parser():
@@ -41,8 +54,8 @@ def make_parser():
     )
     parser.add_argument("-o", "--output", type=str, default='./output', help="output directory")
 
-    parser.add_argument("--ef", type=bool, default=True, help="extract frame")
-    parser.add_argument("--at", type=bool, default=False, help="add Unix Time on Output txt file")
+    parser.add_argument("--ef", type=str2bool, default=True, help="extract frame")
+    parser.add_argument("--at", type=str2bool, default=True, help="add Unix Time on Output txt file")
 
     parser.add_argument("--camid", type=int, default=0, help="webcam demo camera id")
     parser.add_argument(

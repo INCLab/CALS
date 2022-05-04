@@ -10,21 +10,23 @@ def start(output_path):
     paths = [os.path.join(path, i) for i in os.listdir(path) if re.search(".jpg$", i)]
 
     ## 정렬 작업
-    store1, store2, store3, store4 = [], [], [], []
+    store1, store2, store3, store4, store5 = [], [], [], [], []
     for i in paths:
         if len(i.split('/')[-1]) == 9:
-            store4.append(i)
+            store5.append(i)
         elif len(i.split('/')[-1]) == 8:
-            store3.append(i)
+            store4.append(i)
         elif len(i.split('/')[-1]) == 7:
-            store2.append(i)
+            store3.append(i)
         elif len(i.split('/')[-1]) == 6:
+            store2.append(i)
+        elif len(i.split('/')[-1]) == 5:
             store1.append(i)
 
-    paths = list(np.sort(store1)) + list(np.sort(store2)) + list(np.sort(store3)) + list(np.sort(store4))
+    paths = list(np.sort(store1)) + list(np.sort(store2)) + list(np.sort(store3)) + list(np.sort(store4)) + list(np.sort(store5))
     # len('ims/2/a/2a.2710.png')
 
-    fps = 25
+    fps = 30
     frame_array = []
     size = None
     output_idx = 1
@@ -35,18 +37,19 @@ def start(output_path):
         size = (width, height)
         frame_array.append(img)
 
-        if len(frame_array) >= 4500 or idx == len(path) - 1:
-            writer = cv2.VideoWriter(_gst_write_pipeline(os.path.join(output_path, str(output_idx) + 'output.mp4')),
-                                     cv2.CAP_GSTREAMER,
-                                     fps,
-                                     (1280, 720))
-            for i in range(len(frame_array)):
-                frame_array[i] = cv2.resize(frame_array[i], dsize=(1280, 720), interpolation=cv2.INTER_LINEAR)
-                writer.write(frame_array[i])
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    writer = cv2.VideoWriter(os.path.join(output_path, 'output.mp4'),
+                             fourcc,
+                             fps,
+                             (1920, 1080))
 
-            writer.release()
-            frame_array.clear()
-            output_idx += 1
+    for i in range(len(frame_array)):
+        frame_array[i] = cv2.resize(frame_array[i], dsize=(1920, 1080), interpolation=cv2.INTER_LINEAR)
+        writer.write(frame_array[i])
+
+    writer.release()
+    frame_array.clear()
+    output_idx += 1
 
     print(size)
 
@@ -68,3 +71,7 @@ def _gst_write_pipeline(output_uri):
             )
     )
     return pipeline
+
+
+if __name__ == '__main__':
+    start('../bytetrack/output/csi_3rasp/')

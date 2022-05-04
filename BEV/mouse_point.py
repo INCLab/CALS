@@ -71,4 +71,4 @@ def select_points_des(event, x, y, flags, param):
         drawing = False
 
 if __name__ == '__main__':
-    start('../temp/points_ref.txt', '../output/ref_0408/frame/', '../input/edu_map2.png')
+    start('../bytetrack/temp/points.txt', '../bytetrack/output/csi_3rasp/frame/', '../bytetrack/videos/rasp3_map.png')

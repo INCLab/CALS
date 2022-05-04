@@ -43,7 +43,7 @@ def start(output_path, map_path, temp_path='./temp'):
     # e.g., 'ch01-....' -> [2:4]
     filelist = strange_sort(filelist, 2, 4)
 
-    f = open(os.path.join(temp_path, 'points_map1.txt'), 'r')
+    f = open(os.path.join(temp_path, 'points.txt'), 'r')
     data = f.read()
     data = data.split('\n')
 
@@ -258,7 +258,10 @@ def save_dict(file, local_init_id, file_num):
         if not line:
             break
 
-        info = list(map(int, line[:-1].split(" ")))
+        # If Time is added, line[1:-1] or line[:-1]
+        info = list(map(int, line.split(" ")[1:]))
+        print(info)
+
 
         frame = info[0]
 
@@ -281,4 +284,4 @@ def strange_sort(strings, n, m):
     return sorted(strings, key=lambda element: element[n:m])
 
 if __name__ == "__main__":
-    start('../output/paper_17person_byte/no_skip/1', '../input/edu_map.png', temp_path="../temp")
+    start('../bytetrack/output/csi_3rasp', '../bytetrack/videos/rasp3_map.png', temp_path="../bytetrack/temp")
