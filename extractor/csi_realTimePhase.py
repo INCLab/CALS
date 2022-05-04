@@ -4,11 +4,20 @@ import keyboard
 import pandas as pd
 import numpy as np
 import os
+import sys
 from datetime import datetime
 import time
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from multiprocessing import Process
+from matplotlib.artist import Artist
+
+#selected_mac = sys.argv[1]
+
+BANDWIDTH = 20
+
+# number of subcarrier
+NSUB = int(BANDWIDTH * 3.2)
 
 # : 제외
 selected_mac = 'dca6328e1dcb'
@@ -33,7 +42,7 @@ def sniffing(nicname, mac_address):
     x = np.arange(0, show_packet_length, 1)
     y_list = []
 
-    for i in range(0, 64):
+    for i in range(0, NSUB):
         y_list.append([0 for j in range(0, show_packet_length)])
 
     plt.ion()
@@ -46,12 +55,13 @@ def sniffing(nicname, mac_address):
         line, = ax.plot(x, y, alpha=0.5)
         line_list.append(line)
 
-    plt.ylabel('Signal Amplitude', fontsize=16)
+    plt.title('{}'.format(selected_mac), fontsize=18)
+    plt.ylabel('Signal Phase', fontsize=16)
     plt.xlabel('Packet', fontsize=16)
-    plt.ylim(0, 1500)
+    plt.ylim(-300, 300)
 
     # Amp Min-Max gap text on plot figure
-    txt = ax.text(40, 1600, 'Amp Min-Max Gap: None', fontsize=14)
+    txt = ax.text(60, 400, 'Amp Min-Max Gap: None', fontsize=14)
     gap_count = 0
     minmax = []
 
@@ -101,7 +111,7 @@ def sniffing(nicname, mac_address):
             csi_np[:1, ::2] + 1.j * csi_np[:1, 1::2], axes=(1,)
         )
 
-        csi_data = list(np.abs(csi_cmplx)[0])
+        csi_data = list(np.angle(csi_cmplx, deg=True)[0])
 
         # real time plot
         idx += 1
@@ -130,7 +140,7 @@ def sniffing(nicname, mac_address):
         gap = max(gap_list)
 
         Artist.remove(txt)
-        txt = ax.text(40, 1600, 'Amp Min-Max Gap: {}'.format(gap), fontsize=14)
+        txt = ax.text(60, 400, 'Phase Min-Max Gap: {}'.format(gap), fontsize=14)
         gap_count += 1
         if gap_count == 20:
             gap_count = 0
@@ -144,6 +154,7 @@ def sniffing(nicname, mac_address):
         if keyboard.is_pressed('s'):
             print("Stop Collecting...")
             exit()
+
 
 if __name__ == '__main__':
     sniffing('wlan0', selected_mac)

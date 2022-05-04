@@ -1,3 +1,7 @@
+'''
+    Extract raw CSI data (complex number)
+'''
+
 import pcap
 import dpkt
 import keyboard
@@ -6,6 +10,12 @@ import numpy as np
 import os
 from datetime import datetime
 import time
+
+
+BANDWIDTH = 20
+
+# number of subcarrier
+NSUB = int(BANDWIDTH * 3.2)
 
 
 # for sampling
@@ -19,7 +29,7 @@ def sniffing(nicname):
     sniffer = pcap.pcap(name=nicname, promisc=True, immediate=True, timeout_ms=50)
     sniffer.setfilter('udp and port 5500')
     
-    column = ['mac', 'time'] + ['_' + str(i) for i in range(0, 64)]
+    column = ['mac', 'time'] + ['_' + str(i) for i in range(0, NSUB)]
 
     # Dataframe by mac address
     mac_dict = {}
@@ -58,8 +68,8 @@ def sniffing(nicname):
         # Convert CSI bytes to numpy array
         csi_np = np.frombuffer(
             csi,
-            dtype = np.int16,
-            count = nsub * 2
+            dtype=np.int16,
+            count=nsub * 2
         )
 
         # Cast numpy 1-d array to matrix
@@ -70,7 +80,7 @@ def sniffing(nicname):
             csi_np[:1, ::2] + 1.j * csi_np[:1, 1::2], axes=(1,)
         )
 
-        csi_df = pd.DataFrame(np.abs(csi_cmplx))
+        csi_df = pd.DataFrame(csi_cmplx)
         csi_df.insert(0, 'mac', mac)
         csi_df.insert(1, 'time', ts)
 
@@ -93,7 +103,7 @@ def sniffing(nicname):
             print("Stop Collecting...")
 
             for mac_address in mac_dict.keys():
-                mac_dict[mac_address].to_csv('csi_data_{}.csv'.format(mac_address), index=False)
+                mac_dict[mac_address].to_csv('csi_{}_{}MHz.csv'.format(mac_address, bandwidth), index=False)
             break
 
 
@@ -112,6 +122,7 @@ def ping(nicname):
 
         # Sleep
         time.sleep(1)
+
 
 if __name__ == '__main__':
     sniffing('wlan0')
