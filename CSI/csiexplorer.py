@@ -40,12 +40,12 @@ time_ms_list = [
     # '2022-04-06 17:02:04',  # Arrive Right-Bottom
     # '2022-04-06 17:03:07',  # End
 
-    '2022-04-28 17:52:20',  # Start
-    '2022-04-28 17:53:00',  # End
+    '2022-05-02 16:53:04',  # Start
+    '2022-05-02 16:54:00',  # End
 ]
 
 # Path
-test_name = '0428test'
+test_name = '0502test'
 data_path = '../data'
 data_path = os.path.join(data_path, test_name, 'csi')
 csi_list = os.listdir(data_path)

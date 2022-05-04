@@ -27,6 +27,8 @@ def AmpPlotter(csi_df, sample_start, sample_end, spf_sub=None):
 
     csi_df = csi_df[sample_start:sample_end]
 
+    csi_df = complexToAmp(csi_df)
+
     if spf_sub is not None:
         subcarrier = csi_df[spf_sub].to_list()
 
@@ -63,6 +65,8 @@ def AmpPlotter(csi_df, sample_start, sample_end, spf_sub=None):
 
 
 def AmpTimePlotter(csi_df, time_list, time_ms_list, spf_sub=None):
+
+    csi_df = complexToAmp(csi_df)
 
     # Change time_ms_list to Unix Time
     ut_ms_list = []
@@ -148,3 +152,10 @@ def AmpTimePlotter(csi_df, time_list, time_ms_list, spf_sub=None):
         ax.set_xlabel('Time', fontsize=16)
         plt.show()
 
+
+def complexToAmp(comp_df):
+
+    comp_df = comp_df.astype('complex')
+    amp_df = comp_df.apply(np.abs, axis=1)
+
+    return amp_df

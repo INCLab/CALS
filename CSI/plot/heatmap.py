@@ -17,6 +17,8 @@ def heatmap(csi_df, sample_start, sample_end, preprocess=False):
 
     df = csi_df[sample_start:sample_end]
 
+    df = complexToAmp(df)
+
     if preprocess is True:
         df = data_preprocess(df)
 
@@ -47,6 +49,9 @@ def heatmap(csi_df, sample_start, sample_end, preprocess=False):
 
 
 def timeHeatmap(csi_df, time_list, time_ms_list, preprocess=False):
+
+    csi_df = complexToAmp(csi_df)
+
     # Change time_ms_list to Unix Time
     ut_ms_list = []
     for t in time_ms_list:
@@ -124,3 +129,11 @@ def timeHeatmap(csi_df, time_list, time_ms_list, preprocess=False):
     plt.ylabel('Subcarrier Index')
 
     plt.show()
+
+
+def complexToAmp(comp_df):
+
+    comp_df = comp_df.astype('complex')
+    amp_df = comp_df.apply(np.abs, axis=1)
+
+    return amp_df
