@@ -192,7 +192,28 @@ def gridAllocateLabeling(mot_flist, csi_flist, mot_path, csi_path, out_path):
     '''
     BLOCK_SIZE = 360
 
+    x_start = 240
 
+    '''
+          grid space dict elements
+                class : 
+                    left_top: left_top_coord, 
+                    right_bottom: right_bottom_coord
+                    
+        total 12 keys in grid space -> number of class
+    '''
+    grid_space_dict = {}
+
+    for i in range(0, 12):
+        x_top = x_start + ((i % 4) * BLOCK_SIZE)
+        y_top = int(i / 4) * BLOCK_SIZE
+        x_bottom = x_top + BLOCK_SIZE
+        y_bottom = y_top + BLOCK_SIZE
+
+        grid_space_dict[i+1] = {
+            'left_top': [x_top, y_top],
+            'right_bottom': [x_bottom, y_bottom]
+        }
 
 
     # Make mot dict

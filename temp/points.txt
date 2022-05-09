@@ -1,0 +1,8 @@
+frame 1397 432
+frame 1054 358
+frame 755 513
+frame 1184 657
+map 589 318
+map 590 698
+map 1045 700
+map 1044 317

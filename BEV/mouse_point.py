@@ -1,11 +1,11 @@
 import os
 import cv2
-#import DB.database as Database
 
 src_x, src_y = -1, -1
 des_x, des_y = -1, -1
 drawing = False
 f = None
+
 
 def start(tempfile, frame_dir, map_name):
     global f
@@ -20,8 +20,6 @@ def start(tempfile, frame_dir, map_name):
         print(i)
         dir = os.path.join(frame_dir, i)
         print(os.listdir(dir)[0])
-
-        f.write(i + '\n')
 
         frame = cv2.imread(os.path.join(dir, os.listdir(dir)[0]), -1)
         cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
@@ -53,7 +51,7 @@ def select_points_src(event, x, y, flags, param):
         drawing = True
         src_x, src_y = x, y
         print("frame coordinate:", src_x, src_y)
-        #f.write('frame ' + str(src_x) + ' ' + str(src_y) + '\n')
+        f.write('frame ' + str(src_x) + ' ' + str(src_y) + '\n')
         cv2.circle(param, (x, y), 5, (0, 0, 255), -1)
     elif event == cv2.EVENT_LBUTTONUP:
         drawing = False
@@ -71,4 +69,4 @@ def select_points_des(event, x, y, flags, param):
         drawing = False
 
 if __name__ == '__main__':
-    start('../bytetrack/temp/points.txt', '../bytetrack/output/csi_3rasp/frame/', '../bytetrack/videos/rasp3_map.png')
+    start('../temp/points.txt', '../data/0502_csi_mot/ref/frame', '../temp/csi_map_ref.png')
