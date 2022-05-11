@@ -6,6 +6,7 @@ from datetime import datetime
 import time
 
 TIME_THRESHOLD = 1  # Second
+GRID_NUM = 12
 
 '''
     Read all mot output files (e.g., ch01, ch02, ..., ch04)
@@ -128,10 +129,93 @@ def make_time_list(mot_dict, mot_flist):
         timeList.append([before_time, mot_end_ut, 0])
     # MOT output txt의 마지막 타임과 비디오 끝 타임의 간격이 존재하고, Time threshold보다 작을 경우
     # 해당 구간은 mot 마지막 label로 labeling
-    elif 0 < mot_end_ut - before_time <  TIME_THRESHOLD:
+    elif 0 < mot_end_ut - before_time < TIME_THRESHOLD:
         timeList.append([before_time, mot_end_ut, label])
 
     return timeList
+
+
+def isInGrid(grid_n_coord_dict, target_coord_list):
+    left_top = grid_n_coord_dict['left_top']
+    right_bottom = grid_n_coord_dict['right_bottom']
+    x = int(target_coord_list[0])
+    y = int(target_coord_list[1])
+
+    if left_top[0] <= x < right_bottom[0] and left_top[1] <= y < right_bottom[1]:
+        return True
+    else:
+        return False
+
+
+'''
+    This function is using in GA labeling function.
+    Read BEV mot result txt file and return gridTimeDict.
+    
+    gridTimeDict = {
+        grid_num1: [[start_t1, end_t1], [start_t2, end_t2], ...],
+        grid_num2: [],
+        ...
+        grid_last_num: ...        
+    }
+'''
+def createGridTimeDict(mot_path, grid_spaceDict):
+    bevPath = os.path.join(mot_path, 'bev_result')
+    bev_file = os.listdir(bevPath)[0]
+
+    with open(os.path.join(bevPath, bev_file), 'r') as f:
+        data = f.read()
+        row_list = data.split('\n')
+
+        if row_list[-1] == '':
+            row_list.remove('')
+
+    grid_info_list = []
+
+    # row = 'time frame ID x_coord y_coord'
+    for row in row_list:
+        mot_info = row.split(' ')
+        utime = float(mot_info[0])
+        coord = mot_info[3:]
+        tar_class = -1
+
+        # Allocate grid
+        for grid_class in range(1, GRID_NUM + 1):
+            if isInGrid(grid_spaceDict[grid_class], coord):
+                tar_class = grid_class
+                break
+
+        # if coord data is outlier and grid class is not allocated('-1'), delete the info
+        if tar_class != -1:
+            grid_info_list.append([utime, tar_class])
+
+    gridTimeDict = {}
+    for i in range(1, GRID_NUM + 1):
+        gridTimeDict[i] = []
+
+    current_class = grid_info_list[0][-1]
+    start_time = grid_info_list[0][0]
+    end_time = grid_info_list[0][0]
+
+    for idx, grid_info in enumerate(grid_info_list[1:]):
+        # if changed the target class, save [start_time, end_time]  to gridTimeDict[current_class]
+        if grid_info[1] != current_class:
+            gridTimeDict[current_class].append([start_time, end_time])
+
+            # update the info
+            current_class = grid_info[1]
+            start_time = grid_info[0]
+            end_time = grid_info[0]
+        else:
+            # if current class == grid_info class, update end_time
+            end_time = grid_info[0]
+
+            # if last iteration, add time info to dictionary
+            if idx == len(grid_info_list[1:]):
+                gridTimeDict[current_class].append([start_time, end_time])
+
+    print(gridTimeDict)
+
+
 
 
 def personExistLabeling(mot_flist, csi_flist, mot_path, csi_path, out_path):
@@ -182,7 +266,7 @@ def personExistLabeling(mot_flist, csi_flist, mot_path, csi_path, out_path):
         csi_df.to_csv(os.path.join(out_path, 'pe_csi_data_{}.csv'.format(mac)), index=False)
 
 
-def gridAllocateLabeling(mot_flist, csi_flist, mot_path, csi_path, out_path):
+def gridAllocateLabeling(mot_path, csi_path, out_path):
     '''
         1920 x 1080을 120 x 120 정사각형으로 나누면 16 x 9
         양 끝 2 x 9  제거 후, 남은 12 x 9를 3 x 3으로 나누면 4 x 3 = 총 12개의 class
@@ -204,7 +288,7 @@ def gridAllocateLabeling(mot_flist, csi_flist, mot_path, csi_path, out_path):
     '''
     grid_space_dict = {}
 
-    for i in range(0, 12):
+    for i in range(0, GRID_NUM):
         x_top = x_start + ((i % 4) * BLOCK_SIZE)
         y_top = int(i / 4) * BLOCK_SIZE
         x_bottom = x_top + BLOCK_SIZE
@@ -215,49 +299,5 @@ def gridAllocateLabeling(mot_flist, csi_flist, mot_path, csi_path, out_path):
             'right_bottom': [x_bottom, y_bottom]
         }
 
+    createGridTimeDict(mot_path, grid_space_dict)
 
-    # Make mot dict
-    mot_datas = create_mot_dict(mot_flist, mot_path)
-
-    # Make time list
-    timeList = make_time_list(mot_datas, mot_flist)
-
-    for csi_file in csi_flist:
-        csi_label_list = []
-        mac = csi_file[9:-4]
-
-        csi_df = pd.read_csv(os.path.join(csi_path, csi_file))
-
-        # mac address column 제외
-        df = csi_df.iloc[:, 1:]
-
-        # Labeling CSI data
-        for csi_data in df.values.tolist():
-            csi_time = csi_data[0]
-
-            # CSI Time이 MOT 시작 시간보다 빠를경우 -1로 labeling
-            if csi_time < timeList[0][0]:
-                csi_label_list.append(-1)
-                continue
-            # CSI Time이 MOT 끝 시간을 넘어간 경우 -1로 labeling
-            elif csi_time >= timeList[-1][1]:
-                csi_label_list.append(-1)
-                continue
-
-            # tset: [start_time, end_time, plabel]
-            for tset in timeList:
-                start_time, end_time, plabel = tset
-
-                # Person exist label로 변경
-                if plabel > 0:
-                    plabel = 1
-
-                # 현재 iteration에서 csi time이 end time과 같거나 클경우 다음 iter로
-                if csi_time >= end_time:
-                    continue
-                # 시간 범위안에 들어오는경우 해당 label append
-                elif start_time <= csi_time < end_time:
-                    csi_label_list.append(plabel)
-        csi_df['label'] = csi_label_list
-
-        csi_df.to_csv(os.path.join(out_path, 'pe_csi_data_{}.csv'.format(mac)), index=False)

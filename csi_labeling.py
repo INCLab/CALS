@@ -32,9 +32,15 @@ else:
     logger.info("Wrong label argument!")
     exit()
 
-if args.test_name not in os.listdir('data'):
+test_nameList = args.test_name.split('/')
+if test_nameList[0] not in os.listdir('data'):
     logger.info("Wrong test name argument!")
     exit()
+
+if len(test_nameList) > 1:
+    if test_nameList[1] not in os.listdir('data/' + test_nameList[0]):
+        logger.info("Wrong test name2 argument!")
+        exit()
 
 # ========= Read Data =========
 test_name = args.test_name
@@ -58,5 +64,5 @@ if label == 'PE':
     personExistLabeling(mot_flist, csi_flist, mot_path, csi_path, out_path)
     logger.info("Done")
 elif label == 'GA':
-    gridAllocateLabeling(mot_flist, csi_flist, mot_path, csi_path, out_path)
+    gridAllocateLabeling(mot_path, csi_path, out_path)
     logger.info("Done")
