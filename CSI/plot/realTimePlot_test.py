@@ -87,7 +87,7 @@ if __name__ == '__main__':
     # Path
     test_name = 'test3_3rasp'
     data_path = '../../data'
-    data_path = os.path.join(data_path, test_name, 'csi/csi_data_b827ebba9e7b.csv')
+    data_path = os.path.join(data_path, test_name, 'csi/csi_b827ebba9e7b.csv')
     #csi_list = os.listdir(data_path)
 
     null_pilot_col_list = ['_' + str(x + 32) for x in [-32, -31, -30, -29, -21, -7, 0, 7, 21, 29, 30, 31]]

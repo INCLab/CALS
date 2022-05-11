@@ -213,7 +213,7 @@ def createGridTimeDict(mot_path, grid_spaceDict):
             if idx == len(grid_info_list[1:]):
                 gridTimeDict[current_class].append([start_time, end_time])
 
-    print(gridTimeDict)
+    return gridTimeDict
 
 
 
@@ -227,7 +227,7 @@ def personExistLabeling(mot_flist, csi_flist, mot_path, csi_path, out_path):
 
     for csi_file in csi_flist:
         csi_label_list = []
-        mac = csi_file[9:-4]
+        mac = csi_file[4:16]
 
         csi_df = pd.read_csv(os.path.join(csi_path, csi_file))
 
@@ -263,7 +263,7 @@ def personExistLabeling(mot_flist, csi_flist, mot_path, csi_path, out_path):
                     csi_label_list.append(plabel)
         csi_df['label'] = csi_label_list
 
-        csi_df.to_csv(os.path.join(out_path, 'pe_csi_data_{}.csv'.format(mac)), index=False)
+        csi_df.to_csv(os.path.join(out_path, 'pe_csi_{}.csv'.format(mac)), index=False)
 
 
 def gridAllocateLabeling(mot_path, csi_path, out_path):
@@ -299,5 +299,42 @@ def gridAllocateLabeling(mot_path, csi_path, out_path):
             'right_bottom': [x_bottom, y_bottom]
         }
 
-    createGridTimeDict(mot_path, grid_space_dict)
+    gtd = createGridTimeDict(mot_path, grid_space_dict)
+
+    # Read CSI data file and labeling with grid time dictionary
+    csi_flist = os.listdir(csi_path)
+
+    for file in csi_flist:
+        if file[-3:] != 'csv':
+            csi_flist.remove(file)
+
+    for csi_file in csi_flist:
+        csi_label_list = []
+        mac = csi_file[4:16]
+
+        csi_df = pd.read_csv(os.path.join(csi_path, csi_file))
+
+        # mac address column 제외
+        df = csi_df.iloc[:, 1:]
+
+        # Labeling CSI data
+        for csi_time in df['time'].tolist():
+            find_class = False
+            for grid_class in gtd.keys():
+                if gtd[grid_class]:
+                    for time_list in gtd[grid_class]:
+                        if time_list[0] <= csi_time <= time_list[1]:
+                            csi_label_list.append(grid_class)
+                            find_class = True
+                            break
+                if find_class:
+                    break
+            if not find_class:
+                csi_label_list.append(-1)
+
+        csi_df['label'] = csi_label_list
+
+        csi_df.to_csv(os.path.join(out_path, 'ga_csi_{}.csv'.format(mac)), index=False)
+
+
 
