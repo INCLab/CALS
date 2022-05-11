@@ -18,6 +18,7 @@ GRID_NUM = 12
 def create_mot_dict(mot_file_list, mot_path):
     # === 1 ===
     mot_dict_by_files = {}
+
     for mot_fname in mot_file_list:
         with open(os.path.join(mot_path, mot_fname), 'r') as f:
             data = f.read()
@@ -216,9 +217,24 @@ def createGridTimeDict(mot_path, grid_spaceDict):
     return gridTimeDict
 
 
+def personExistLabeling(mot_path, csi_path, out_path):
+    mot_flist = os.listdir(mot_path)
 
+    tmp_flist = []
+    for file in mot_flist:
+        if file[-3:] == 'txt':
+            tmp_flist.append(file)
 
-def personExistLabeling(mot_flist, csi_flist, mot_path, csi_path, out_path):
+    mot_flist = tmp_flist
+
+    csi_flist = os.listdir(csi_path)
+
+    tmp_flist = []
+    for file in csi_flist:
+        if file[-3:] == 'csv':
+            tmp_flist.append(file)
+    csi_flist = tmp_flist
+
     # Make mot dict
     mot_datas = create_mot_dict(mot_flist, mot_path)
 
@@ -304,9 +320,11 @@ def gridAllocateLabeling(mot_path, csi_path, out_path):
     # Read CSI data file and labeling with grid time dictionary
     csi_flist = os.listdir(csi_path)
 
+    tmp_flist = []
     for file in csi_flist:
-        if file[-3:] != 'csv':
-            csi_flist.remove(file)
+        if file[-3:] == 'csv':
+            tmp_flist.append(file)
+    csi_flist = tmp_flist
 
     for csi_file in csi_flist:
         csi_label_list = []
@@ -337,4 +355,33 @@ def gridAllocateLabeling(mot_path, csi_path, out_path):
         csi_df.to_csv(os.path.join(out_path, 'ga_csi_{}.csv'.format(mac)), index=False)
 
 
+def noPersonLabeling(timeList, csi_path, out_path):
+    # Read CSI data file and labeling with grid time dictionary
+    csi_flist = os.listdir(csi_path)
 
+    tmp_flist = []
+    for file in csi_flist:
+        if file[-3:] == 'csv':
+            tmp_flist.append(file)
+    csi_flist = tmp_flist
+
+    for csi_file in csi_flist:
+        csi_label_list = []
+        mac = csi_file[4:16]
+
+        csi_df = pd.read_csv(os.path.join(csi_path, csi_file))
+
+        # mac address column 제외
+        df = csi_df.iloc[:, 1:]
+
+        csi_timeList = df['time'].tolist()
+
+        for csiTime in csi_timeList:
+            if timeList[0] <= csiTime <= timeList[1]:
+                csi_label_list.append(0)
+            else:
+                csi_label_list.append(-1)
+
+        csi_df['label'] = csi_label_list
+
+        csi_df.to_csv(os.path.join(out_path, 'pe_csi_{}.csv'.format(mac)), index=False)

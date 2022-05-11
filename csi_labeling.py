@@ -7,14 +7,26 @@ import argparse
 
 from loguru import logger
 from datetime import datetime
-from labeling import personExistLabeling, gridAllocateLabeling
+from labeling import personExistLabeling, gridAllocateLabeling, noPersonLabeling
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
 def make_parser():
     parser = argparse.ArgumentParser("CSI Labeling")
 
-    parser.add_argument("label", default="PE", help="Person Existence(PE,pe,Pe) or Grid Allocation(GA,ga,Ga)")
+    parser.add_argument("label", default="PE", help="Person Existence(PE,pe,Pe) Grid Allocation(GA,ga,Ga)")
     parser.add_argument("test_name", default=None, help="the name of test folder")
+    parser.add_argument("--np", type=str2bool, default=False, help="All data class is no person in PE process")
     return parser
 
 
@@ -56,12 +68,18 @@ else:
 
 os.makedirs(out_path, exist_ok=True)
 
-# =========  Create file list  =========
-csi_flist = os.listdir(csi_path)
-mot_flist = os.listdir(mot_path)
-
-if label == 'PE':
-    personExistLabeling(mot_flist, csi_flist, mot_path, csi_path, out_path)
+if label == 'PE' and args.np is False:
+    personExistLabeling(mot_path, csi_path, out_path)
+    logger.info("Done")
+elif label == 'PE' and args.np is True:
+    time_ms_list = [
+        '2022-05-02 14:35:00',  # Start
+        '2022-05-02 14:38:00',  # End
+    ]
+    timeList = []
+    for t in time_ms_list:
+        timeList.append(time.mktime(datetime.strptime(t, '%Y-%m-%d %H:%M:%S').timetuple()))
+    noPersonLabeling(timeList, csi_path, out_path)
     logger.info("Done")
 elif label == 'GA':
     gridAllocateLabeling(mot_path, csi_path, out_path)
