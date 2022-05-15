@@ -1,4 +1,3 @@
-# Todo: real Time plotter 완성하기
 import os
 import pandas as pd
 import numpy as np
