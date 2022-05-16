@@ -232,7 +232,7 @@ def save_dict(file):
 
 
 if __name__ == "__main__":
-    test_list = ['lefttop', 'middle', 'rightbottom', 'righttop', 'test1', 'testset']
+    test_list = ['lefttop', 'middle', 'rightbottom', 'righttop', 'all_loc', 'testset']
 
     for case in test_list:
         start('../data/0502_csi_mot/' + case + '/mot', '../temp/csi_grid_map.png')

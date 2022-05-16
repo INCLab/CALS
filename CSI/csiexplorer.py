@@ -45,9 +45,14 @@ time_ms_list = [
 ]
 
 # Path
-test_name = '0502test'
+# test_name = '0502test'
+# data_path = '../data'
+# data_path = os.path.join(data_path, test_name, 'csi')
+
+test_name = 'pe'
 data_path = '../data'
-data_path = os.path.join(data_path, test_name, 'csi')
+data_path = os.path.join(data_path, test_name)
+
 csi_list = os.listdir(data_path)
 
 null_pilot_col_list = ['_' + str(x+32) for x in [-32, -31, -30, -29, -21, -7, 0, 7, 21, 29, 30, 31]]
@@ -76,6 +81,10 @@ if __name__ == "__main__":
             print("Error!")
             continue
 
+    isComp = None
+    while isComp not in ['y', 'n']:
+        isComp = input('CSI data type is complex?(y or n):  ')
+
     data_fname = csi_list[select_num-1]
 
     data_path = os.path.join(data_path, data_fname)
@@ -84,13 +93,17 @@ if __name__ == "__main__":
     df = pd.read_csv(data_path)
 
     # Remove MAC address, timestamp
-    csi_df = df.iloc[:, 2:]
+    # csi_df = df.iloc[:, 2:]
+
+    # Remove MAC address, timestamp, label
+    csi_df = df.iloc[:, 2:-1]
 
     # Create timestamp list
     time_list = df['time'].tolist()
 
     # Remove null & pilot subcarriers
-    csi_df.drop(null_pilot_col_list, axis=1, inplace=True)
+    if null_pilot_col_list[0] in list(csi_df.columns):
+        csi_df.drop(null_pilot_col_list, axis=1, inplace=True)
 
     while True:
         plot_mode = input('1.Amplitude-SampleNum plot\n'
@@ -111,9 +124,9 @@ if __name__ == "__main__":
                     print("Wrong input!")
                     spf_sub_idx = input('Select one subcarrier {}:  '.format(csi_df.columns))
 
-                AmpPlotter(csi_df, s_start, s_end, spf_sub_idx)
+                AmpPlotter(csi_df, s_start, s_end, isComp, spf_sub_idx)
             elif spf_subc == 'False':
-                AmpPlotter(csi_df, s_start, s_end)
+                AmpPlotter(csi_df, s_start, s_end, isComp)
             else:
                 print("Wrong input!")
         elif plot_mode == '2':
@@ -127,27 +140,27 @@ if __name__ == "__main__":
                     print("Wrong input!")
                     spf_sub_idx = input('Select one subcarrier {}:  '.format(csi_df.columns))
 
-                AmpTimePlotter(csi_df, time_list, time_ms_list, spf_sub_idx)
+                AmpTimePlotter(csi_df, time_list, time_ms_list, isComp, spf_sub_idx)
             elif spf_subc == 'False':
-                AmpTimePlotter(csi_df, time_list, time_ms_list)
+                AmpTimePlotter(csi_df, time_list, time_ms_list, isComp)
             else:
                 print("Wrong input!")
         elif plot_mode == '3':
             pre = input('Data Preprocessing (True or False):  ')
 
             if pre == 'True':
-                heatmap(csi_df, s_start, s_end, preprocess=True)
+                heatmap(csi_df, s_start, s_end, isComp, preprocess=True)
             elif pre == 'False':
-                heatmap(csi_df, s_start, s_end)
+                heatmap(csi_df, s_start, s_end, isComp)
             else:
                 print("Wrong input!")
         elif plot_mode == '4':
             pre = input('Data Preprocessing (True or False):  ')
 
             if pre == 'True':
-                timeHeatmap(csi_df, time_list, time_ms_list, preprocess=True)
+                timeHeatmap(csi_df, time_list, time_ms_list, isComp, preprocess=True)
             elif pre == 'False':
-                timeHeatmap(csi_df, time_list, time_ms_list)
+                timeHeatmap(csi_df, time_list, time_ms_list, isComp)
             else:
                 print("Wrong input!")
 

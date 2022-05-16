@@ -1,5 +1,5 @@
 '''
-    Usage: python csi_labeling.py labelclass testname
+    Usage: python csi_labeling.py label_class testname
 '''
 import os
 import time

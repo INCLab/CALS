@@ -23,11 +23,12 @@ def lowpassfilter(signal, thresh=0.63, wavelet="db4"):
     return reconstructed_signal
 
 
-def AmpPlotter(csi_df, sample_start, sample_end, spf_sub=None):
+def AmpPlotter(csi_df, sample_start, sample_end, isComp, spf_sub=None):
 
     csi_df = csi_df[sample_start:sample_end]
 
-    csi_df = complexToAmp(csi_df)
+    if isComp == 'y':
+        csi_df = complexToAmp(csi_df)
 
     if spf_sub is not None:
         subcarrier = csi_df[spf_sub].to_list()
@@ -58,15 +59,14 @@ def AmpPlotter(csi_df, sample_start, sample_end, spf_sub=None):
         for idx, sub in enumerate(subcarrier_list):
             ax.plot(sub, alpha=0.5, label=csi_df.columns[idx])
 
-        ax.legend()
         ax.set_ylabel('Signal Amplitude', fontsize=16)
         ax.set_xlabel('Sample Index', fontsize=16)
         plt.show()
 
 
-def AmpTimePlotter(csi_df, time_list, time_ms_list, spf_sub=None):
-
-    csi_df = complexToAmp(csi_df)
+def AmpTimePlotter(csi_df, time_list, time_ms_list, isComp, spf_sub=None):
+    if isComp == 'y':
+        csi_df = complexToAmp(csi_df)
 
     # Change time_ms_list to Unix Time
     ut_ms_list = []

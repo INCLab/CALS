@@ -13,11 +13,12 @@ Plot
 '''
 
 
-def heatmap(csi_df, sample_start, sample_end, preprocess=False):
+def heatmap(csi_df, sample_start, sample_end, isComp, preprocess=False):
 
     df = csi_df[sample_start:sample_end]
 
-    df = complexToAmp(df)
+    if isComp == 'y':
+        df = complexToAmp(df)
 
     if preprocess is True:
         df = data_preprocess(df)
@@ -48,9 +49,9 @@ def heatmap(csi_df, sample_start, sample_end, preprocess=False):
     plt.show()
 
 
-def timeHeatmap(csi_df, time_list, time_ms_list, preprocess=False):
-
-    csi_df = complexToAmp(csi_df)
+def timeHeatmap(csi_df, time_list, time_ms_list, isComp, preprocess=False):
+    if isComp == 'y':
+        csi_df = complexToAmp(csi_df)
 
     # Change time_ms_list to Unix Time
     ut_ms_list = []
