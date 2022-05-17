@@ -20,7 +20,7 @@ def train_rf(csi_df):
     X = csi_df.drop(['label'], 1)  # features
     y = csi_df['label']  # target
 
-    # train 75%, valid 25%
+    # model 75%, valid 25%
     x_train, x_valid, y_train, y_valid = train_test_split(X, y)
 
     # # PCA 차원 축소(써보고 테스트 데이터셋으로 성능 높아지는 지 선택적으로 하기)

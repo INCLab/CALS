@@ -17,7 +17,7 @@ class MOTDataset(Dataset):
         self,
         data_dir=None,
         json_file="train_half.json",
-        name="train",
+        name="model",
         img_size=(608, 1088),
         preproc=None,
     ):

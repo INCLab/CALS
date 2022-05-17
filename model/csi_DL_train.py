@@ -11,7 +11,7 @@ def deep_model(csi_df):
     # scaled_df = scaler.transform(test_df.iloc[:, 0:100])
     # test_df.iloc[:, 0:100] = scaled_df
 
-    # # Split train, test data with different dataset
+    # # Split model, test data with different dataset
     # train_feature = df.drop(columns=['label'])
     # train_target = df['label']
     #

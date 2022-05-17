@@ -49,7 +49,7 @@ def make_parser():
     parser.add_argument("-n", "--name", type=str, default=None, help="model name")
 
     parser.add_argument(
-        #"--path", default="./datasets/mot/train/MOT17-05-FRCNN/img1", help="path to images or video"
+        #"--path", default="./datasets/mot/model/MOT17-05-FRCNN/img1", help="path to images or video"
         "--path", default=None, help="path to images or video"
     )
     parser.add_argument("-o", "--output", type=str, default='./output', help="output directory")
