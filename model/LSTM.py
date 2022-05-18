@@ -6,6 +6,9 @@ from keras.models import Sequential
 from keras.layers import Dense, LSTM
 from sklearn.model_selection import train_test_split
 
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 dataPath = '../data/pe'
 
 # Load Person Exist dataset
@@ -29,10 +32,10 @@ X_test = np.array(X_test)
 y_train = np.array(y_train)
 y_test = np.array(y_test)
 
-# Sampling
-SAMPLE_NUM = 1000
-X_train, y_train = X_train[:SAMPLE_NUM], y_train[:SAMPLE_NUM]
-X_test, y_test = X_test[:int(SAMPLE_NUM * 0.2)], y_test[:int(SAMPLE_NUM * 0.2)]
+# # Sampling
+# SAMPLE_NUM = 1000
+# X_train, y_train = X_train[:SAMPLE_NUM], y_train[:SAMPLE_NUM]
+# X_test, y_test = X_test[:int(SAMPLE_NUM * 0.2)], y_test[:int(SAMPLE_NUM * 0.2)]
 
 
 print('X shape: {}'.format(X_train.shape))
