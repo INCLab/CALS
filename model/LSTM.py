@@ -47,13 +47,13 @@ X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))  # LSTM은 in
 print('X reshape: {}'.format(X_train.shape))
 
 model = Sequential()
-model.add(LSTM(10, activation='sigmoid', input_shape=(TIMESTEMP, 1), return_sequences=True))
-model.add(LSTM(10, activation='sigmoid', return_sequences=True))  # (None, TIMESTEMP, 10)을 받는다
-model.add(LSTM(3))  # 마지막은 return_sequence X
+model.add(LSTM(10, activation='relu', input_shape=(TIMESTEMP, 1), return_sequences=True))
+model.add(LSTM(10, activation='relu', return_sequences=True))  # (None, TIMESTEMP, 10)을 받는다
+model.add(LSTM(3, activation='relu'))  # 마지막은 return_sequence X
 # return_sequence를 쓰면 dimension이 한개 추가 되므로 다음 Dense Layer의 인풋에 3 dim이 들어가게 되므로 안씀
 # LSTM 두개를 엮을 때
-model.add(Dense(5))
-model.add(Dense(1))
+model.add(Dense(5, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
 
 model.summary()
 
