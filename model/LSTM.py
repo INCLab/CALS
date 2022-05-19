@@ -33,7 +33,7 @@ y_train = np.array(y_train)
 y_test = np.array(y_test)
 
 # # Sampling
-# SAMPLE_NUM = 1000
+# SAMPLE_NUM = 8000
 # X_train, y_train = X_train[:SAMPLE_NUM], y_train[:SAMPLE_NUM]
 # X_test, y_test = X_test[:int(SAMPLE_NUM * 0.2)], y_test[:int(SAMPLE_NUM * 0.2)]
 
@@ -47,24 +47,24 @@ X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))  # LSTM은 in
 print('X reshape: {}'.format(X_train.shape))
 
 model = Sequential()
-model.add(LSTM(10, activation='relu', input_shape=(TIMESTEMP, 1), return_sequences=True))
-model.add(LSTM(10, activation='relu', return_sequences=True))  # (None, TIMESTEMP, 10)을 받는다
-model.add(LSTM(3, activation='relu'))  # 마지막은 return_sequence X
+model.add(LSTM(128, input_shape=(TIMESTEMP, 1)))
+#model.add(LSTM(10, activation='relu', return_sequences=True))  # (None, TIMESTEMP, 10)을 받는다
+#model.add(LSTM(3, activation='relu'))  # 마지막은 return_sequence X
 # return_sequence를 쓰면 dimension이 한개 추가 되므로 다음 Dense Layer의 인풋에 3 dim이 들어가게 되므로 안씀
 # LSTM 두개를 엮을 때
-model.add(Dense(5, activation='relu'))
+#model.add(Dense(5, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
 model.summary()
 
-model.compile(optimizer='adam', loss='mse', metrics='accuracy')
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics='accuracy')
 
 from keras.callbacks import EarlyStopping
 
 early_stopping = EarlyStopping(monitor='loss', patience=100, mode='auto')
-model.fit(X_train, y_train, epochs=1, batch_size=1, verbose=2, callbacks=[early_stopping])
+model.fit(X_train, y_train, epochs=100, batch_size=32, verbose=2, callbacks=[early_stopping])
 
 X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
-yhat = model.evaluate(X_test, y_test)
-print(yhat)
+result = model.evaluate(X_test, y_test)
+print(result)
