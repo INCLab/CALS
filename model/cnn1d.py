@@ -71,9 +71,8 @@ hidden_units = 128 # 뉴런의 수
 
 model = Sequential()
 #model.add(Dropout(dropout_ratio))
-model.add(Conv1D(num_filters, kernel_size, padding='valid'))
+model.add(Conv1D(num_filters, kernel_size, padding='valid', activation='relu'))
 model.add(BatchNormalization())
-model.add(Activation('relu'))
 model.add(GlobalMaxPooling1D())
 model.add(Dense(hidden_units, activation='relu'))
 #model.add(Dropout(dropout_ratio))
