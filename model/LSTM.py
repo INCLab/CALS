@@ -22,6 +22,7 @@ for sub in total_sub:
 
 max_acc = 0
 max_sub_idx = None
+acc_list = []
 
 for sub in sub_list:
     # Load Person Exist dataset
@@ -77,12 +78,11 @@ for sub in sub_list:
     result = model.evaluate(X_test, y_test)
     print(result)
 
-    pred = model.predict(X_test)
-
-    print(classification_report(y_test, pred))
+    acc_list.append([sub, result])
 
     if result[-1] > max_acc:
         max_acc = result[-1]
         max_sub_idx = sub
 
 print('max acc: {}, sub_idx: {}'.format(max_acc, max_sub_idx))
+print(acc_list)

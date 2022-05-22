@@ -74,6 +74,6 @@ kernel_rf_clf.fit(X_train, y_train)
 
 pred = kernel_rf_clf.predict(X_test)
 score = kernel_rf_clf.score(X_test, y_test)
-
 print(score)
+
 print(classification_report(y_test, pred))
