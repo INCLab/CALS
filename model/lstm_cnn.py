@@ -1,5 +1,5 @@
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense, BatchNormalization, Activation
+from tensorflow.keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.models import load_model
 
@@ -71,9 +71,7 @@ hidden_units = 128 # 뉴런의 수
 
 model = Sequential()
 #model.add(Dropout(dropout_ratio))
-model.add(Conv1D(num_filters, kernel_size, padding='valid'))
-model.add(BatchNormalization())
-model.add(Activation('relu'))
+model.add(Conv1D(num_filters, kernel_size, padding='valid', activation='relu'))
 model.add(GlobalMaxPooling1D())
 model.add(Dense(hidden_units, activation='relu'))
 #model.add(Dropout(dropout_ratio))
@@ -83,7 +81,7 @@ es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=3)
 mc = ModelCheckpoint('best_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
 
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
-history = model.fit(X_train, y_train, epochs=20, batch_size=64, validation_data=(X_test, y_test), callbacks=[es, mc])
+history = model.fit(X_train, y_train, epochs=20, batch_size=32, validation_data=(X_test, y_test), callbacks=[es, mc])
 
 loaded_model = load_model('best_model.h5')
 
