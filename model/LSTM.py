@@ -20,69 +20,65 @@ for sub in total_sub:
     if sub not in null_pilot_col_list:
         sub_list.append(sub)
 
-max_acc = 0
-max_sub_idx = None
-acc_list = []
+# max_acc = 0
+# max_sub_idx = None
 
-for sub in sub_list:
-    # Load Person Exist dataset
-    pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, [sub])
+# Load Person Exist dataset
+pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_30', '_31', '_33', '_34'])
 
-    csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
+csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
 
-    print('< PE data size > \n {}'.format(len(pe_df)))
-    print('< NPE data size > \n {}'.format(len(npe_df)))
+print('< PE data size > \n {}'.format(len(pe_df)))
+print('< NPE data size > \n {}'.format(len(npe_df)))
 
-    # Divide feature and label
-    csi_data, csi_label = csi_df.iloc[:, :-1], csi_df.iloc[:, -1]
+# Divide feature and label
+csi_data, csi_label = csi_df.iloc[:, :-1], csi_df.iloc[:, -1]
 
-    # Divide Train, Test dataset
-    X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42)
+# Divide Train, Test dataset
+X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42)
 
-    # Change to ndarray
-    X_train = np.array(X_train)
-    X_test = np.array(X_test)
-    y_train = np.array(y_train)
-    y_test = np.array(y_test)
+# Change to ndarray
+X_train = np.array(X_train)
+X_test = np.array(X_test)
+y_train = np.array(y_train)
+y_test = np.array(y_test)
 
-    # # Sampling
-    # SAMPLE_NUM = 8000
-    # X_train, y_train = X_train[:SAMPLE_NUM], y_train[:SAMPLE_NUM]
-    # X_test, y_test = X_test[:int(SAMPLE_NUM * 0.2)], y_test[:int(SAMPLE_NUM * 0.2)]
+# # Sampling
+# SAMPLE_NUM = 8000
+# X_train, y_train = X_train[:SAMPLE_NUM], y_train[:SAMPLE_NUM]
+# X_test, y_test = X_test[:int(SAMPLE_NUM * 0.2)], y_test[:int(SAMPLE_NUM * 0.2)]
 
 
-    print('X shape: {}'.format(X_train.shape))
-    print('y shape: {}'.format(y_train.shape))
+print('X shape: {}'.format(X_train.shape))
+print('y shape: {}'.format(y_train.shape))
 
-    TIMESTEMP = 10
+TIMESTEMP = 10
 
-    X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
-    print('X reshape: {}'.format(X_train.shape))
+X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
+print('X reshape: {}'.format(X_train.shape))
 
-    model = Sequential()
-    model.add(LSTM(256, input_shape=(TIMESTEMP, 1)))
-    #model.add(LSTM(10, activation='relu', return_sequences=True))  # (None, TIMESTEMP, 10)을 받는다
-    #model.add(LSTM(3, activation='relu'))  # 마지막은 return_sequence X
-    model.add(Dense(128, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
+model = Sequential()
+model.add(LSTM(256, input_shape=(TIMESTEMP, 1)))
+#model.add(LSTM(10, activation='relu', return_sequences=True))  # (None, TIMESTEMP, 10)을 받는다
+#model.add(LSTM(3, activation='relu'))  # 마지막은 return_sequence X
+model.add(Dense(128, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
 
-    model.summary()
+model.summary()
 
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics='accuracy')
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics='accuracy')
 
-    early_stopping = EarlyStopping(monitor='loss', patience=100, mode='auto')
-    model.fit(X_train, y_train, epochs=50, batch_size=32, verbose=2, callbacks=[early_stopping])
+early_stopping = EarlyStopping(monitor='loss', patience=100, mode='auto')
+model.fit(X_train, y_train, epochs=50, batch_size=32, verbose=2, callbacks=[early_stopping])
 
-    X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
+X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
-    result = model.evaluate(X_test, y_test)
-    print(result)
+result = model.evaluate(X_test, y_test)
+print(result)
 
-    acc_list.append([sub, result])
+# if result[-1] > max_acc:
+#     max_acc = result[-1]
+#     max_sub_idx = sub
 
-    if result[-1] > max_acc:
-        max_acc = result[-1]
-        max_sub_idx = sub
-
-print('max acc: {}, sub_idx: {}'.format(max_acc, max_sub_idx))
-print(acc_list)
+# print('max acc: {}, sub_idx: {}'.format(max_acc, max_sub_idx))
+# print(acc_list)
