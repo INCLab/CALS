@@ -68,8 +68,8 @@ model.summary()
 
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics='accuracy')
 
-early_stopping = EarlyStopping(monitor='loss', patience=100, mode='auto')
-model.fit(X_train, y_train, epochs=50, batch_size=32, verbose=2, callbacks=[early_stopping])
+early_stopping = EarlyStopping(monitor='val_loss', mode='min', patience=10)
+model.fit(X_train, y_train, epochs=50, batch_size=32,  validation_data=(X_test, y_test), verbose=2, callbacks=[early_stopping])
 
 X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 

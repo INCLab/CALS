@@ -60,7 +60,7 @@ X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))  # LSTM은 in
 print('X reshape: {}'.format(X_train.shape))
 
 model = Sequential()
-model.add(Conv1D(256, 10, padding='valid', activation='relu'))
+model.add(Conv1D(256, 10, padding='valid', activation='relu', input_shape=(10, 1)))
 #model.add(BatchNormalization())
 model.add(GlobalMaxPooling1D())
 # model.add(Conv1D(num_filters, kernel_size, padding='valid', activation='relu'))
@@ -70,9 +70,9 @@ model.add(Dense(1, activation='sigmoid'))
 
 model.summary()
 
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=3)
+es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10)
 model.fit(X_train, y_train, epochs=20, batch_size=64, validation_data=(X_test, y_test), callbacks=[es])
 
 X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
