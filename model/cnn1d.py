@@ -94,4 +94,4 @@ for sub in sub_list:
         max_sub_idx = sub
 
 print('max acc: {}, sub_idx: {}'.format(max_acc, max_sub_idx))
-print(acc_list.sort(key=lambda x: (x[1], x[0])))
+print(acc_list)
