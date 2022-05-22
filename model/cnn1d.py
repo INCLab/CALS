@@ -89,8 +89,8 @@ for sub in sub_list:
     print("\n 테스트 정확도: %.4f" % (acc))
 
     acc_list.append([sub, acc])
-    if result[-1] > max_acc:
-        max_acc = result[-1]
+    if acc > max_acc:
+        max_acc = acc
         max_sub_idx = sub
 
 print('max acc: {}, sub_idx: {}'.format(max_acc, max_sub_idx))
