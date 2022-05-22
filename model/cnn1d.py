@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from keras.models import Sequential
-from keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense, BatchNormalization, Activation
+from keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense, MaxPooling1D
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from dataloader import DataLoader
 from numpy import array
@@ -60,11 +60,11 @@ X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))  # LSTM은 in
 print('X reshape: {}'.format(X_train.shape))
 
 model = Sequential()
-model.add(Conv1D(256, 10, padding='valid', activation='relu', input_shape=(10, 1)))
+model.add(Conv1D(256, 3, padding='valid', activation='relu', input_shape=(10, 1)))
 #model.add(BatchNormalization())
 model.add(MaxPooling1D())
-# model.add(Conv1D(num_filters, kernel_size, padding='valid', activation='relu'))
-# model.add(GlobalMaxPooling1D())
+model.add(Conv1D(256, 8, padding='valid', activation='relu'))
+model.add(GlobalMaxPooling1D())
 model.add(Dense(128, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
