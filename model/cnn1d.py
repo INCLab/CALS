@@ -84,13 +84,9 @@ model.summary()
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
 
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=3)
-mc = ModelCheckpoint('best_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
+model.fit(X_train, y_train, epochs=20, batch_size=64, validation_data=(X_test, y_test), callbacks=[es])
 
-history = model.fit(X_train, y_train, epochs=20, batch_size=64, validation_data=(X_test, y_test), callbacks=[es, mc])
-
-loaded_model = load_model('best_model.h5')
-
-acc = loaded_model.evaluate(X_test, y_test)[1]
+acc = model.evaluate(X_test, y_test)[1]
 print("\n 테스트 정확도: %.4f" % (acc))
 
 # acc_list.append([sub, acc])
