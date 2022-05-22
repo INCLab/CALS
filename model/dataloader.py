@@ -17,11 +17,15 @@ class DataLoader:
         return pe_df, npe_df
 
 
-    def loadWindowPeData(self, dataPath):
+    def loadWindowPeData(self, dataPath, sub_list=None):
         pe_flist, npe_flist = self.__createFileList(dataPath)
 
-        pe_df = self.__createSlidingDF(pe_flist, 'pe')
-        npe_df = self.__createSlidingDF(npe_flist, 'npe')
+        if sub_list:
+            pe_df = self.__createSlidingDF(pe_flist, 'pe', sub_list)
+            npe_df = self.__createSlidingDF(npe_flist, 'npe', sub_list)
+        else:
+            pe_df = self.__createSlidingDF(pe_flist, 'pe')
+            npe_df = self.__createSlidingDF(npe_flist, 'npe')
 
         return pe_df, npe_df
 
@@ -49,11 +53,17 @@ class DataLoader:
                 df = pd.concat([df, temp_df], ignore_index=True)
         return df
 
-    def __createSlidingDF(self, flist, isPE):
+    def __createSlidingDF(self, flist, isPE, sub_list=None):
         df = None
         for idx, file in enumerate(flist):
             csi_df = pd.read_csv(file)
-            subcarrier_list = csi_df.columns.to_list()[2:-1]
+            subcarrier_list = None
+
+            # 특정 subcarrier만 추출하는경우
+            if sub_list:
+                subcarrier_list = sub_list
+            else:
+                subcarrier_list = csi_df.columns.to_list()[2:-1]
 
             if isPE == 'pe':
                 # PE data에서 label이 0인경우 삭제
