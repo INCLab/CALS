@@ -81,7 +81,7 @@ es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=3)
 mc = ModelCheckpoint('best_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
 
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
-history = model.fit(X_train, y_train, epochs=20, batch_size=64, validation_data=(X_test, y_test), callbacks=[es, mc])
+history = model.fit(X_train, y_train, epochs=50, batch_size=64, validation_data=(X_test, y_test), callbacks=[es, mc])
 
 loaded_model = load_model('best_model.h5')
 
