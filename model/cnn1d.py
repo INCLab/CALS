@@ -1,9 +1,12 @@
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.models import load_model
+
 import numpy as np
 import pandas as pd
 from dataloader import DataLoader
 from numpy import array
-from keras.models import Sequential
-from keras.layers import Dense, LSTM
 from sklearn.model_selection import train_test_split
 
 import os
@@ -41,30 +44,31 @@ y_test = np.array(y_test)
 print('X shape: {}'.format(X_train.shape))
 print('y shape: {}'.format(y_train.shape))
 
-TIMESTEMP = 10
-
 X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
 print('X reshape: {}'.format(X_train.shape))
 
-model = Sequential()
-model.add(LSTM(128, input_shape=(TIMESTEMP, 1)))
-#model.add(LSTM(10, activation='relu', return_sequences=True))  # (None, TIMESTEMP, 10)을 받는다
-#model.add(LSTM(3, activation='relu'))  # 마지막은 return_sequence X
-# return_sequence를 쓰면 dimension이 한개 추가 되므로 다음 Dense Layer의 인풋에 3 dim이 들어가게 되므로 안씀
-# LSTM 두개를 엮을 때
-#model.add(Dense(5, activation='relu'))
-model.add(Dense(1, activation='sigmoid'))
-
-model.summary()
-
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics='accuracy')
-
-from keras.callbacks import EarlyStopping
-
-early_stopping = EarlyStopping(monitor='loss', patience=100, mode='auto')
-model.fit(X_train, y_train, epochs=100, batch_size=32, verbose=2, callbacks=[early_stopping])
-
 X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
-result = model.evaluate(X_test, y_test)
-print(result)
+TIMESTEMP = 10
+
+dropout_ratio = 0.3 # 드롭아웃 비율
+num_filters = 256 # 커널의 수
+kernel_size = 10 # 커널의 크기
+hidden_units = 128 # 뉴런의 수
+
+model = Sequential()
+#model.add(Dropout(dropout_ratio))
+model.add(Conv1D(num_filters, kernel_size, padding='valid', activation='relu'))
+model.add(GlobalMaxPooling1D())
+model.add(Dense(hidden_units, activation='relu'))
+#model.add(Dropout(dropout_ratio))
+model.add(Dense(1, activation='sigmoid'))
+
+es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=3)
+mc = ModelCheckpoint('best_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
+history = model.fit(X_train, y_train, epochs=20, batch_size=64, validation_data=(X_test, y_test), callbacks=[es, mc])
+
+loaded_model = load_model('best_model.h5')
+print("\n 테스트 정확도: %.4f" % (loaded_model.evaluate(X_test, y_test)[1]))
