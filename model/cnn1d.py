@@ -80,6 +80,8 @@ model.add(Dense(hidden_units, activation='relu'))
 #model.add(Dropout(dropout_ratio))
 model.add(Dense(1, activation='sigmoid'))
 
+model.summary()
+
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=3)
 mc = ModelCheckpoint('best_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
 
