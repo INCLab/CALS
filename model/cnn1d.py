@@ -28,7 +28,7 @@ dataPath = '../data/pe'
 
 
 # Load Person Exist dataset
-pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_29', '_30', '_31', '_33', '_34', '_35', '_36'])
+pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_29', '_30', '_31', '_33', '_34', '_35'])
 
 csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
 
