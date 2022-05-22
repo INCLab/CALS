@@ -1,7 +1,7 @@
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense, BatchNormalization, Activation
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-from tensorflow.keras.models import load_model
+from keras.models import Sequential
+from keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense, BatchNormalization, Activation
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.models import load_model
 
 import numpy as np
 import pandas as pd
@@ -80,12 +80,12 @@ model.add(Dense(hidden_units, activation='relu'))
 #model.add(Dropout(dropout_ratio))
 model.add(Dense(1, activation='sigmoid'))
 
+model.summary()
+
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=3)
 mc = ModelCheckpoint('best_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
 
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
-
-model.summary()
 
 history = model.fit(X_train, y_train, epochs=20, batch_size=64, validation_data=(X_test, y_test), callbacks=[es, mc])
 
