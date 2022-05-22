@@ -1,14 +1,11 @@
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense, BatchNormalization, Activation
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-from tensorflow.keras.models import load_model
-
 import numpy as np
 import pandas as pd
+from keras.models import Sequential
+from keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense, BatchNormalization, Activation
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 from dataloader import DataLoader
 from numpy import array
 from sklearn.model_selection import train_test_split
-
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -57,34 +54,28 @@ y_test = np.array(y_test)
 print('X shape: {}'.format(X_train.shape))
 print('y shape: {}'.format(y_train.shape))
 
+TIMESTEMP = 10
+
 X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
 print('X reshape: {}'.format(X_train.shape))
 
-X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
-
-TIMESTEMP = 10
-
-dropout_ratio = 0.3 # 드롭아웃 비율
-num_filters = 256 # 커널의 수
-kernel_size = 10 # 커널의 크기
-hidden_units = 128 # 뉴런의 수
-
 model = Sequential()
-#model.add(Dropout(dropout_ratio))
-model.add(Conv1D(num_filters, kernel_size, padding='valid', activation='relu'))
+model.add(Conv1D(256, 10, padding='valid', activation='relu'))
 #model.add(BatchNormalization())
 model.add(GlobalMaxPooling1D())
 # model.add(Conv1D(num_filters, kernel_size, padding='valid', activation='relu'))
 # model.add(GlobalMaxPooling1D())
-model.add(Dense(hidden_units, activation='relu'))
-#model.add(Dropout(dropout_ratio))
+model.add(Dense(128, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
 model.summary()
+
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
 
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=3)
 model.fit(X_train, y_train, epochs=20, batch_size=64, validation_data=(X_test, y_test), callbacks=[es])
+
+X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
 acc = model.evaluate(X_test, y_test)[1]
 print("\n 테스트 정확도: %.4f" % (acc))

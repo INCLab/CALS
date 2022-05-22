@@ -12,13 +12,13 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 dataPath = '../data/pe'
 
-null_pilot_col_list = ['_' + str(x + 32) for x in [-32, -31, -30, -29, -21, -7, 0, 7, 21, 29, 30, 31]]
-total_sub = list(np.arange(0, 63, 1))
-sub_list = []
-for sub in total_sub:
-    sub = '_' + str(sub)
-    if sub not in null_pilot_col_list:
-        sub_list.append(sub)
+# null_pilot_col_list = ['_' + str(x + 32) for x in [-32, -31, -30, -29, -21, -7, 0, 7, 21, 29, 30, 31]]
+# total_sub = list(np.arange(0, 63, 1))
+# sub_list = []
+# for sub in total_sub:
+#     sub = '_' + str(sub)
+#     if sub not in null_pilot_col_list:
+#         sub_list.append(sub)
 
 # max_acc = 0
 # max_sub_idx = None
