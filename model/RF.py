@@ -22,7 +22,9 @@ dataPath = '../data/pe'
 #
 # # Divide feature and label
 # csi_data, csi_label = csi_df.iloc[:, 2:-1], csi_df.iloc[:, -1]
-#
+
+
+# Sliding Window ====================================================================
 
 # Load Person Exist dataset
 pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
@@ -40,12 +42,14 @@ csi_data, csi_label = csi_df.iloc[:, :-1], csi_df.iloc[:, -1]
 # Divide Train, Test dataset
 X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42)
 
+# =========================================================================================
+
 # Sampling
 # SAMPLE_NUM = 35000
 # X_train, y_train = X_train[:SAMPLE_NUM], y_train[:SAMPLE_NUM]
 # X_test, y_test = X_test[:int(SAMPLE_NUM * 0.2)], y_test[:int(SAMPLE_NUM * 0.2)]
 
-
+print('Total data size: {}'.format(len(csi_data)))
 print("< X_train shape >")
 print(X_train.shape)
 

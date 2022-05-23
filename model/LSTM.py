@@ -24,9 +24,14 @@ dataPath = '../data/pe'
 # max_sub_idx = None
 
 # Load Person Exist dataset
-pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_30', '_31', '_33', '_34'])
+pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
+#pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_30', '_31', '_33', '_34'])
 
 csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
+
+# from data_analysis import dataAnalysisPE
+#
+# dataAnalysisPE(csi_df)
 
 print('< PE data size > \n {}'.format(len(pe_df)))
 print('< NPE data size > \n {}'.format(len(npe_df)))
