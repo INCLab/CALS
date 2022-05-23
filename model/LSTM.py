@@ -64,9 +64,9 @@ X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))  # LSTM은 in
 print('X reshape: {}'.format(X_train.shape))
 
 model = Sequential()
-model.add(LSTM(50, input_shape=(TIMESTEMP, 1), return_sequences=True))  #원래는 256
-model.add(LSTM(50, return_sequences=True))
-model.add(LSTM(50))  # (None, TIMESTEMP, 10)을 받는다
+model.add(LSTM(128, input_shape=(TIMESTEMP, 1)))  #원래는 256
+#model.add(LSTM(50, return_sequences=True))
+#model.add(LSTM(50))  # (None, TIMESTEMP, 10)을 받는다
 #model.add(LSTM(3, activation='relu'))  # 마지막은 return_sequence X
 model.add(Dense(128, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
