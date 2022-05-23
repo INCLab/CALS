@@ -7,12 +7,17 @@ from slidingWindow import makeSlidingWindow
 
 class DataLoader:
 
-    def loadPEdata(self, dataPath):
+    def loadPEdata(self, dataPath, sub_list=None):
         pe_flist, npe_flist = self.__createFileList(dataPath)
 
         # Read csi files and merge with same class
-        pe_df = self.__createDataFrame(pe_flist)
-        npe_df = self.__createDataFrame(npe_flist)
+        if sub_list:
+            sub_list.append('label')
+            pe_df = self.__createDataFrame(pe_flist, sub_list)
+            npe_df = self.__createDataFrame(npe_flist, sub_list)
+        else:
+            pe_df = self.__createDataFrame(pe_flist)
+            npe_df = self.__createDataFrame(npe_flist)
 
         return pe_df, npe_df
 
@@ -43,10 +48,15 @@ class DataLoader:
 
         return pe_flist, npe_flist
 
-    def __createDataFrame(self, flist):
+    def __createDataFrame(self, flist, sub_list=None):
         df = None
         for idx, file in enumerate(flist):
             temp_df = pd.read_csv(file)
+            temp_df = temp_df.iloc[:, 2:]
+
+            if sub_list:
+                temp_df = temp_df[sub_list]
+
             if idx == 0:
                 df = temp_df
             else:

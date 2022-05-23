@@ -24,8 +24,8 @@ dataPath = '../data/pe'
 # max_sub_idx = None
 
 # Load Person Exist dataset
-# pe_df, npe_df = DataLoader().loadPEdata(dataPath, ['_30', '_31', '_33', '_34'])
-pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
+pe_df, npe_df = DataLoader().loadPEdata(dataPath)
+# pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
 # pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_30', '_31', '_33', '_34'])
 
 csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
@@ -76,16 +76,11 @@ model.summary()
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics='accuracy')
 
 early_stopping = EarlyStopping(monitor='val_loss', mode='min', patience=10)
-model.fit(X_train, y_train, epochs=50, batch_size=32,  validation_data=(X_test, y_test), verbose=2, callbacks=[early_stopping])
+history = model.fit(X_train, y_train, epochs=50, batch_size=32,  validation_data=(X_test, y_test), verbose=2, callbacks=[early_stopping])
 
 X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
 result = model.evaluate(X_test, y_test)
 print(result)
 
-# if result[-1] > max_acc:
-#     max_acc = result[-1]
-#     max_sub_idx = sub
 
-# print('max acc: {}, sub_idx: {}'.format(max_acc, max_sub_idx))
-# print(acc_list)

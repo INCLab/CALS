@@ -13,7 +13,7 @@ from dataloader import DataLoader
 dataPath = '../data/pe'
 
 # Load Person Exist dataset
-pe_df, npe_df = DataLoader().loadPEdata(dataPath, ['_30'])
+pe_df, npe_df = DataLoader().loadPEdata(dataPath)
 
 csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
 
@@ -56,28 +56,26 @@ print(X_train.shape)
 print("< y_train shape >")
 print(y_train.shape)
 
-# RF
-params = { 'svm_clf__n_estimators' : [100],
-           'svm_clf__max_depth' : [12],
-           'svm_clf__min_samples_leaf' : [8],
-           'svm_clf__min_samples_split' : [20]
+# SVM
+params = { 'C' : [10],
+           'coef0' : [1],
+           'degree' : [4],
+           'gamma' : [0.1],
+           'kernel' : ['poly']
             }
 
-kernel_rf_clf = Pipeline([
-
-    # ("scaler", StandardScaler()),
-    ("svm_clf", RandomForestClassifier(n_estimators=200, max_depth=12, min_samples_leaf=8,
-                                       min_samples_split=20, random_state=0, n_jobs=-1))
+kernel_svm_clf = Pipeline([
+    ("svm_clf", SVC(C=10, coef0=1, degree=4, gamma=0.1, kernel='poly'))
 ])
 
 
-# grid_cv = GridSearchCV(kernel_rf_clf, param_grid = params, cv = 3, n_jobs = -1)
+# grid_cv = GridSearchCV(kernel_svm_clf, param_grid = params, cv = 3, n_jobs = -1)
 # grid_cv.fit(X_train, y_train)
 
-kernel_rf_clf.fit(X_train, y_train)
+kernel_svm_clf.fit(X_train, y_train)
 
-pred = kernel_rf_clf.predict(X_test)
-score = kernel_rf_clf.score(X_test, y_test)
+pred = kernel_svm_clf.predict(X_test)
+score = kernel_svm_clf.score(X_test, y_test)
 print(score)
 
 print(classification_report(y_test, pred))

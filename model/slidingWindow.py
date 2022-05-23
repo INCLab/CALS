@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-PACKETPERSECOND = 10
+PACKETPERSECOND = 50
 
 def makeSlidingWindow(df, subcarrier):
     s_df = df[[subcarrier, 'label']]
