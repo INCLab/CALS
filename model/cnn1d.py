@@ -73,17 +73,39 @@ model.summary()
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10)
-model.fit(X_train, y_train, epochs=20, batch_size=64, validation_data=(X_test, y_test), callbacks=[es])
+history = model.fit(X_train, y_train, epochs=20, batch_size=64, validation_data=(X_test, y_test), callbacks=[es])
 
 X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
 acc = model.evaluate(X_test, y_test)[1]
 print("\n 테스트 정확도: %.4f" % (acc))
 
-# acc_list.append([sub, acc])
-# if acc > max_acc:
-#     max_acc = acc
-#     max_sub_idx = sub
-#
-# print('max acc: {}, sub_idx: {}'.format(max_acc, max_sub_idx))
-# print(acc_list)
+import matplotlib.pyplot as plt
+
+history_dict = history.history
+loss = history_dict['loss']
+val_loss = history_dict['val_loss']
+
+epochs = range(1, len(loss) + 1)
+
+plt.plot(epochs, loss, 'bo', label='Training loss')  # ‘bo’는 파란색 점을 의미합니다.
+plt.plot(epochs, val_loss, 'b', label='Validation loss') # ‘b’는 파란색 실선을 의미합니다.
+plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.show()
+
+plt.clf() # 그래프를 초기화합니다.
+acc = history_dict['acc']
+val_acc = history_dict['val_acc']
+
+plt.plot(epochs, acc, 'bo', label='Training acc')
+plt.plot(epochs, val_acc, 'b', label='Validation acc')
+plt.title('Training and validation accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+
+plt.show()
