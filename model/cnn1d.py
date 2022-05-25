@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from keras.models import Sequential
-from keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense, MaxPooling1D
+from keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense, MaxPooling1D, BatchNormalization
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from dataloader import DataLoader
 from numpy import array
@@ -25,7 +25,9 @@ dataPath = '../data/pe'
 
 
 # Load Person Exist dataset
-pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_30', '_31', '_33', '_34'])
+pe_df, npe_df = DataLoader().loadPEdata(dataPath, ['_30', '_31', '_33', '_34'])
+# pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_30', '_31', '_33', '_34'])
+# pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
 
 csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
 
@@ -54,16 +56,15 @@ y_test = np.array(y_test)
 print('X shape: {}'.format(X_train.shape))
 print('y shape: {}'.format(y_train.shape))
 
-TIMESTEMP = 10
+TIMESTEMP = 4
 
 X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
 print('X reshape: {}'.format(X_train.shape))
 
 model = Sequential()
-model.add(Conv1D(256, 3, padding='valid', activation='relu', input_shape=(10, 1)))
-#model.add(BatchNormalization())
+model.add(Conv1D(128, 3, padding='valid', activation='relu', input_shape=(TIMESTEMP, 1)))
 model.add(MaxPooling1D())
-model.add(Conv1D(256, 8, padding='valid', activation='relu'))
+model.add(Conv1D(128, 1, padding='valid', activation='relu'))
 model.add(GlobalMaxPooling1D())
 model.add(Dense(128, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
@@ -73,7 +74,7 @@ model.summary()
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10)
-history = model.fit(X_train, y_train, epochs=20, batch_size=64, validation_data=(X_test, y_test), callbacks=[es])
+history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_data=(X_test, y_test), callbacks=[es])
 
 X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
@@ -98,8 +99,8 @@ plt.legend()
 plt.show()
 
 plt.clf() # 그래프를 초기화합니다.
-acc = history_dict['acc']
-val_acc = history_dict['val_acc']
+acc = history_dict['accuracy']
+val_acc = history_dict['val_accuracy']
 
 plt.plot(epochs, acc, 'bo', label='Training acc')
 plt.plot(epochs, val_acc, 'b', label='Validation acc')

@@ -13,7 +13,8 @@ from dataloader import DataLoader
 dataPath = '../data/pe'
 
 # Load Person Exist dataset
-pe_df, npe_df = DataLoader().loadPEdata(dataPath, ['_30'])
+pe_df, npe_df = DataLoader().loadPEdata(dataPath,  ['_30', '_31', '_33', '_34'])
+#pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
 
 csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
 
@@ -23,23 +24,6 @@ print('< NPE data size > \n {}'.format(len(npe_df)))
 
 # Divide feature and label
 csi_data, csi_label = csi_df.iloc[:, :-1], csi_df.iloc[:, -1]
-
-
-# Sliding Window ====================================================================
-
-# # Load Person Exist dataset
-# pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
-
-# csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
-
-# print('< PE data size > \n {}'.format(len(pe_df)))
-# print('< NPE data size > \n {}'.format(len(npe_df)))
-
-
-# # Divide feature and label
-# csi_data, csi_label = csi_df.iloc[:, :-1], csi_df.iloc[:, -1]
-
-# =========================================================================================
 
 # Divide Train, Test dataset
 X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42)
