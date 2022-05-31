@@ -2,7 +2,7 @@
     run demo
     python3 tools/demo_track.py --path ./videos/test -o ./output
 
-    --fps: default 30
+    --fps: default 20
     --ef: extract frame type boolean default True
     --at: add time default True
 '''
@@ -83,7 +83,7 @@ def make_parser():
     parser.add_argument("--conf", default=None, type=float, help="test conf")
     parser.add_argument("--nms", default=None, type=float, help="test nms threshold")
     parser.add_argument("--tsize", default=None, type=int, help="test img size")
-    parser.add_argument("--fps", default=30, type=int, help="frame rate (fps)")
+    parser.add_argument("--fps", default=20, type=int, help="frame rate (fps)")
     parser.add_argument(
         "--fp16",
         dest="fp16",

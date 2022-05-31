@@ -27,6 +27,7 @@ def make_parser():
     parser.add_argument("label", default="PE", help="Person Existence(PE,pe,Pe) Grid Allocation(GA,ga,Ga)")
     parser.add_argument("test_name", default=None, help="the name of test folder")
     parser.add_argument("--np", type=str2bool, default=False, help="All data class is no person in PE process")
+    parser.add_argument("--pnp", type=str2bool, default=False, help="Part of data class is no person in PE process")
     return parser
 
 
@@ -69,11 +70,23 @@ else:
 os.makedirs(out_path, exist_ok=True)
 
 if label == 'PE' and args.np is False:
-    personExistLabeling(mot_path, csi_path, out_path)
+
+    if args.pnp is True:
+        time_ms_list = [
+            '2022-05-30 12:47:27',  # Start
+            '2022-05-30 12:52:59',  # End
+        ]
+        timeList = []
+        for t in time_ms_list:
+            timeList.append(time.mktime(datetime.strptime(t, '%Y-%m-%d %H:%M:%S').timetuple()))
+
+        personExistLabeling(mot_path, csi_path, out_path, timeList)
+    else:
+        personExistLabeling(mot_path, csi_path, out_path)
     logger.info("Done")
 elif label == 'PE' and args.np is True:
     time_ms_list = [
-        '2022-05-02 14:35:00',  # Start
+        '2022-05-02 12:47:27',  # Start
         '2022-05-02 14:38:00',  # End
     ]
     timeList = []

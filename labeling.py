@@ -217,7 +217,7 @@ def createGridTimeDict(mot_path, grid_spaceDict):
     return gridTimeDict
 
 
-def personExistLabeling(mot_path, csi_path, out_path):
+def personExistLabeling(mot_path, csi_path, out_path, noPE_tList=None):
     mot_flist = os.listdir(mot_path)
 
     tmp_flist = []
@@ -254,6 +254,12 @@ def personExistLabeling(mot_path, csi_path, out_path):
         for csi_data in df.values.tolist():
             csi_time = csi_data[0]
 
+            # CSI데이터 중 일부분이 사람이 없는 데이터라면 해당 시간은 0으로 labeling
+            if noPE_tList:
+                if noPE_tList[0] <= csi_time <= noPE_tList[1]:
+                    csi_label_list.append(0)
+                    continue
+
             # CSI Time이 MOT 시작 시간보다 빠를경우 -1로 labeling
             if csi_time < timeList[0][0]:
                 csi_label_list.append(-1)
@@ -278,6 +284,15 @@ def personExistLabeling(mot_path, csi_path, out_path):
                 elif start_time <= csi_time < end_time:
                     csi_label_list.append(plabel)
         csi_df['label'] = csi_label_list
+
+        # null 값 제거 및 amp로 convert
+        null_pilot_col_list = ['_' + str(x + 32) for x in [-32, -31, -30, -29, -21, -7, 0, 7, 21, 29, 30, 31]]
+        csi_df.drop(null_pilot_col_list, axis=1, inplace=True)
+        csi_df.drop(csi_df[csi_df['label'] == -1].index, inplace=True)
+
+        df_subc= csi_df.iloc[:, 2:-1]
+        df_subc = complexToAmp(df_subc)
+        csi_df.iloc[:, 2:-1] = df_subc
 
         csi_df.to_csv(os.path.join(out_path, 'pe_csi_{}.csv'.format(mac)), index=False)
 
@@ -385,3 +400,11 @@ def noPersonLabeling(timeList, csi_path, out_path):
         csi_df['label'] = csi_label_list
 
         csi_df.to_csv(os.path.join(out_path, 'pe_csi_{}.csv'.format(mac)), index=False)
+
+
+def complexToAmp(comp_df):
+
+    comp_df = comp_df.astype('complex')
+    amp_df = comp_df.apply(np.abs, axis=1)
+
+    return amp_df
