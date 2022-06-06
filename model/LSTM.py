@@ -1,96 +1,105 @@
+import os
 import numpy as np
 import pandas as pd
+import tensorflow as tf
+from keras.models import Sequential
+from tensorflow.keras.optimizers import Adam
+from keras.layers import Embedding, LSTM, GlobalMaxPooling1D, Dense, MaxPooling1D, BatchNormalization, Dropout
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 from dataloader import DataLoader
 from numpy import array
-from keras.models import Sequential
-from keras.layers import Dense, LSTM
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
-from keras.callbacks import EarlyStopping
-import os
+from model_plot import model_train_plot
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 dataPath = '../data/pe'
 
-null_pilot_col_list = ['_' + str(x + 32) for x in [-32, -31, -30, -29, -21, -7, 0, 7, 21, 29, 30, 31]]
-total_sub = list(np.arange(0, 63, 1))
-sub_list = []
-for sub in total_sub:
-    sub = '_' + str(sub)
-    if sub not in null_pilot_col_list:
-        sub_list.append(sub)
+# Load Person Exist dataset
+# pe_df, npe_df = DataLoader().loadPEdata(dataPath, ['_30', '_31', '_33', '_34'])
+pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
+# pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_30', '_31', '_33', '_34'])
 
-max_acc = 0
-max_sub_idx = None
-acc_list = []
-for sub in sub_list:
-    # Load Person Exist dataset
-    # pe_df, npe_df = DataLoader().loadPEdata(dataPath, ['_30', '_31', '_33', '_34'])
-    pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
-    # pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_30', '_31', '_33', '_34'])
+csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
 
-    csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
+# from data_analysis import dataAnalysisPE
+#
+# dataAnalysisPE(csi_df)
 
-    # from data_analysis import dataAnalysisPE
-    #
-    # dataAnalysisPE(csi_df)
+print('< PE data size > \n {}'.format(len(pe_df)))
+print('< NPE data size > \n {}'.format(len(npe_df)))
 
-    print('< PE data size > \n {}'.format(len(pe_df)))
-    print('< NPE data size > \n {}'.format(len(npe_df)))
+# Divide feature and label
+csi_data, csi_label = csi_df.iloc[:, :-1], csi_df.iloc[:, -1]
 
-    # Divide feature and label
-    csi_data, csi_label = csi_df.iloc[:, :-1], csi_df.iloc[:, -1]
+# Divide Train, Test dataset
+X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42, shuffle=False)
+X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.1, random_state=42, shuffle=False)
 
-    # Divide Train, Test dataset
-    X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42)
+# # Scaling
+# standardizer = StandardScaler()
+# X_train = standardizer.fit_transform(X_train)
+# X_valid = standardizer.transform(X_valid)
+# X_test = standardizer.transform(X_test)
 
-    # Change to ndarray
-    X_train = np.array(X_train)
-    X_test = np.array(X_test)
-    y_train = np.array(y_train)
-    y_test = np.array(y_test)
+# Change to ndarray
+X_train = np.array(X_train)
+X_test = np.array(X_test)
+X_valid = np.array(X_valid)
+y_valid = np.array(y_valid)
+y_train = np.array(y_train)
+y_test = np.array(y_test)
 
-    # # Sampling
-    # SAMPLE_NUM = 8000
-    # X_train, y_train = X_train[:SAMPLE_NUM], y_train[:SAMPLE_NUM]
-    # X_test, y_test = X_test[:int(SAMPLE_NUM * 0.2)], y_test[:int(SAMPLE_NUM * 0.2)]
+# # Sampling
+# SAMPLE_NUM = 8000
+# X_train, y_train = X_train[:SAMPLE_NUM], y_train[:SAMPLE_NUM]
+# X_test, y_test = X_test[:int(SAMPLE_NUM * 0.2)], y_test[:int(SAMPLE_NUM * 0.2)]
 
+print('Train: X shape: {}'.format(X_train.shape))
+print('Train: y shape: {}'.format(y_train.shape))
+print('Valid: X shape: {}'.format(X_valid.shape))
+print('Valid: y shape: {}'.format(y_valid.shape))
+print('Test: X shape: {}'.format(X_test.shape))
+print('Test: y shape: {}'.format(y_test.shape))
 
-    print('X shape: {}'.format(X_train.shape))
-    print('y shape: {}'.format(y_train.shape))
+TIMESTEMP = 50
+MAX_EPOCHS = 100
 
-    TIMESTEMP = 50
+inp = (-1, X_train.shape[1], 1)
 
-    X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
-    print('X reshape: {}'.format(X_train.shape))
+X_train = X_train.reshape(inp)  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
+X_valid = X_valid.reshape(inp)
+X_test = X_test.reshape(inp)
 
-    model = Sequential()
-    model.add(LSTM(128, input_shape=(TIMESTEMP, 1)))  #원래는 256
-    #model.add(LSTM(50, return_sequences=True))
-    #model.add(LSTM(50))  # (None, TIMESTEMP, 10)을 받는다
-    #model.add(LSTM(3, activation='relu'))  # 마지막은 return_sequence X
-    model.add(Dense(128, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
+print('X reshape: {}'.format(X_train.shape))
 
-    model.summary()
+learning_rate = 1e-2
+decay = learning_rate / MAX_EPOCHS
 
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics='accuracy')
-
-    early_stopping = EarlyStopping(monitor='val_loss', mode='min', patience=10)
-    history = model.fit(X_train, y_train, epochs=100, batch_size=32,  validation_data=(X_test, y_test), verbose=2, callbacks=[early_stopping])
-
-    X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
-
-    result = model.evaluate(X_test, y_test)
-    print(result)
-
-    if result[-1] > max_acc:
-        max_acc = result[-1]
-        max_sub_idx = sub
-    acc_list.append([sub, result[-1]])
-
-print('max_acc: {}, idx: {}'.format(max_acc, max_sub_idx))
-print(acc_list)
+optimizer = Adam(
+    learning_rate=learning_rate,
+    decay=decay
+)
 
 
+model = Sequential()
+model.add(LSTM(128, input_shape=(TIMESTEMP, 1), return_sequences=True))
+model.add(Dropout(0.2))
+model.add(LSTM(128, activation='relu', return_sequences=False))
+model.add(Dropout(0.2))
+model.add(Dense(128, activation='relu'))
+model.add(Dropout(0.2))
+model.add(Dense(1, activation='sigmoid'))
 
+model.summary()
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+es = EarlyStopping(monitor='val_loss', mode='min', patience=20)
+history = model.fit(X_train, y_train, epochs=MAX_EPOCHS, batch_size=32, validation_data=(X_valid, y_valid), callbacks=[es])
+
+acc = model.evaluate(X_test, y_test)[1]
+print("\n 테스트 정확도: %.4f" % (acc))
+
+# plot train process
+model_train_plot(history)

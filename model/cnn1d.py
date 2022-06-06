@@ -1,12 +1,15 @@
+import os
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense, MaxPooling1D, BatchNormalization
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from dataloader import DataLoader
 from numpy import array
 from sklearn.model_selection import train_test_split
-import os
+from model_plot import model_train_plot
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 dataPath = '../data/pe'
@@ -25,9 +28,9 @@ dataPath = '../data/pe'
 
 
 # Load Person Exist dataset
-pe_df, npe_df = DataLoader().loadPEdata(dataPath, ['_30', '_31', '_33', '_34'])
+# pe_df, npe_df = DataLoader().loadPEdata(dataPath)
 # pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_30', '_31', '_33', '_34'])
-# pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
+pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
 
 csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
 
@@ -37,28 +40,45 @@ print('< NPE data size > \n {}'.format(len(npe_df)))
 
 # Divide feature and label
 csi_data, csi_label = csi_df.iloc[:, :-1], csi_df.iloc[:, -1]
+print(csi_data)
 
 # Divide Train, Test dataset
-X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42, shuffle=False)
+X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.1, random_state=42, shuffle=False)
+
+# # Scaling
+# standardizer = StandardScaler()
+# X_train = standardizer.fit_transform(X_train)
+# X_valid = standardizer.transform(X_valid)
+# X_test = standardizer.transform(X_test)
 
 # Change to ndarray
 X_train = np.array(X_train)
 X_test = np.array(X_test)
+X_valid = np.array(X_valid)
+y_valid = np.array(y_valid)
 y_train = np.array(y_train)
 y_test = np.array(y_test)
 
 # # Sampling
-# SAMPLE_NUM = 8000=
+# SAMPLE_NUM = 8000
 # X_train, y_train = X_train[:SAMPLE_NUM], y_train[:SAMPLE_NUM]
 # X_test, y_test = X_test[:int(SAMPLE_NUM * 0.2)], y_test[:int(SAMPLE_NUM * 0.2)]
 
+print('Train: X shape: {}'.format(X_train.shape))
+print('Train: y shape: {}'.format(y_train.shape))
+print('Valid: X shape: {}'.format(X_valid.shape))
+print('Valid: y shape: {}'.format(y_valid.shape))
+print('Test: X shape: {}'.format(X_test.shape))
+print('Test: y shape: {}'.format(y_test.shape))
 
-print('X shape: {}'.format(X_train.shape))
-print('y shape: {}'.format(y_train.shape))
+TIMESTEMP = 50
+inp = (-1, X_train.shape[1], 1)
 
-TIMESTEMP = 4
+X_train = X_train.reshape(inp)  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
+X_valid = X_valid.reshape(inp)
+X_test = X_test.reshape(inp)
 
-X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
 print('X reshape: {}'.format(X_train.shape))
 
 model = Sequential()
@@ -71,42 +91,17 @@ model.add(Dense(1, activation='sigmoid'))
 
 model.summary()
 
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=tf.keras.optimizers.Adam(lr=0.001), loss='binary_crossentropy', metrics=['accuracy'])
 
-es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10)
-history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_data=(X_test, y_test), callbacks=[es])
-
-X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
+es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=20)
+history = model.fit(X_train, y_train, epochs=100, batch_size=16, validation_data=(X_valid, y_valid), callbacks=[es])
 
 acc = model.evaluate(X_test, y_test)[1]
 print("\n 테스트 정확도: %.4f" % (acc))
 
-import matplotlib.pyplot as plt
+# model save
+#model.save("cnn1d_model")
 
-history_dict = history.history
-loss = history_dict['loss']
-val_loss = history_dict['val_loss']
+# plot train process
+model_train_plot(history)
 
-epochs = range(1, len(loss) + 1)
-
-plt.plot(epochs, loss, 'bo', label='Training loss')  # ‘bo’는 파란색 점을 의미합니다.
-plt.plot(epochs, val_loss, 'b', label='Validation loss') # ‘b’는 파란색 실선을 의미합니다.
-plt.title('Training and validation loss')
-plt.xlabel('Epochs')
-plt.ylabel('Loss')
-plt.legend()
-
-plt.show()
-
-plt.clf() # 그래프를 초기화합니다.
-acc = history_dict['accuracy']
-val_acc = history_dict['val_accuracy']
-
-plt.plot(epochs, acc, 'bo', label='Training acc')
-plt.plot(epochs, val_acc, 'b', label='Validation acc')
-plt.title('Training and validation accuracy')
-plt.xlabel('Epochs')
-plt.ylabel('Accuracy')
-plt.legend()
-
-plt.show()
