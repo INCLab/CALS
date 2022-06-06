@@ -90,7 +90,8 @@ inp = (-1, X_train.shape[1], 1)
 X_train = X_train.reshape(inp)  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
 X_valid = X_valid.reshape(inp)
 X_test = X_test.reshape(inp)
-
+print(X_train[0])
+exit()
 print('X reshape: {}'.format(X_train.shape))
 
 model = Sequential()

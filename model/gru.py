@@ -47,7 +47,7 @@ dataPath = '../data/lawrence/video_csi.csv'
 # Divide feature and label
 csi_df = pd.read_csv('../data/lawrence/video_csi.csv')
 
-csi_data, csi_label = csi_df.iloc[:, :-1], csi_df.iloc[:, -1]
+csi_data, csi_label = csi_df.iloc[:, 1:-1], csi_df.iloc[:, -1]
 
 # Display correlation
 # corr = csi_data.corr()
@@ -66,7 +66,7 @@ X_test = standardizer.transform(X_test)
 
 # # Save Scaler
 joblib.dump(standardizer, './std_scaler.pkl')
-
+exit()
 # Change to ndarray
 y_valid = np.array(y_valid)
 y_train = np.array(y_train)
