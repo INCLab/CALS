@@ -9,6 +9,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from dataloader import DataLoader
 from numpy import array
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 from model_plot import model_train_plot
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"

@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+import joblib
 from tensorflow.keras.optimizers import Adam
 from keras.models import Sequential
 from keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense, MaxPooling1D, BatchNormalization
@@ -9,6 +10,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from dataloader import DataLoader
 from numpy import array
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 from model_plot import model_train_plot, corr_heatmap
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -60,6 +62,9 @@ X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_siz
 # X_valid = standardizer.transform(X_valid)
 # X_test = standardizer.transform(X_test)
 
+# # Save Scaler
+# joblib.dump(scaler, './std_scaler.pkl')
+
 # Change to ndarray
 X_train = np.array(X_train)
 X_test = np.array(X_test)
@@ -109,13 +114,13 @@ optimizer = Adam(
 model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
 
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10)
-history = model.fit(X_train, y_train, epochs=100, batch_size=16, validation_data=(X_valid, y_valid), callbacks=[es])
+history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_data=(X_valid, y_valid), callbacks=[es])
 
 acc = model.evaluate(X_test, y_test)[1]
 print("\n 테스트 정확도: %.4f" % (acc))
 
 # model save
-#model.save("cnn1d_model")
+model.save("cnn1d_model")
 
 # plot train process
 model_train_plot(history)
