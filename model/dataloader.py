@@ -22,15 +22,15 @@ class DataLoader:
         return pe_df, npe_df
 
 
-    def loadWindowPeData(self, dataPath, sub_list=None):
+    def loadWindowPeData(self, dataPath, window_size, sub_list=None, filter=False):
         pe_flist, npe_flist = self.__createFileList(dataPath)
 
         if sub_list:
-            pe_df = self.__createSlidingDF(pe_flist, 'pe', sub_list)
-            npe_df = self.__createSlidingDF(npe_flist, 'npe', sub_list)
+            pe_df = self.__createSlidingDF(pe_flist, 'pe', window_size, sub_list, filter)
+            npe_df = self.__createSlidingDF(npe_flist, 'npe', window_size, sub_list, filter)
         else:
-            pe_df = self.__createSlidingDF(pe_flist, 'pe')
-            npe_df = self.__createSlidingDF(npe_flist, 'npe')
+            pe_df = self.__createSlidingDF(pe_flist, 'pe', window_size, sub_list, filter)
+            npe_df = self.__createSlidingDF(npe_flist, 'npe', window_size, sub_list, filter)
 
         return pe_df, npe_df
 
@@ -63,7 +63,7 @@ class DataLoader:
                 df = pd.concat([df, temp_df], ignore_index=True)
         return df
 
-    def __createSlidingDF(self, flist, isPE, sub_list=None):
+    def __createSlidingDF(self, flist, isPE, window_size, sub_list=None, filter=False):
         df = None
         for idx, file in enumerate(flist):
             csi_df = pd.read_csv(file)
@@ -80,15 +80,17 @@ class DataLoader:
                 indexNames = csi_df[csi_df['label'] == 0].index
                 # Delete these row indexes from dataFrame
                 csi_df.drop(indexNames, inplace=True)
+                csi_df.reset_index(drop=True, inplace=True)
             else:
                 # NPE data에서 label이 1인경우 삭제
                 indexNames = csi_df[csi_df['label'] == 1].index
                 # Delete these row indexes from dataFrame
                 csi_df.drop(indexNames, inplace=True)
+                csi_df.reset_index(drop=True, inplace=True)
 
             sliding_df = None
             for i, subcarrier in enumerate(subcarrier_list):
-                temp_df = makeSlidingWindow(csi_df, subcarrier)
+                temp_df = makeSlidingWindow(csi_df, window_size, subcarrier, filter)
                 if i == 0:
                     sliding_df = temp_df
                 else:

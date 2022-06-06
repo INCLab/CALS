@@ -2,15 +2,19 @@ import os
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from tensorflow.keras.optimizers import Adam
 from keras.models import Sequential
 from keras.layers import Embedding, Dropout, Conv1D, GlobalMaxPooling1D, Dense, MaxPooling1D, BatchNormalization
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from dataloader import DataLoader
 from numpy import array
 from sklearn.model_selection import train_test_split
-from model_plot import model_train_plot
+from model_plot import model_train_plot, corr_heatmap
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
+TIMESTEMP = 50
+MAX_EPOCHS = 100
 
 dataPath = '../data/pe'
 
@@ -29,8 +33,8 @@ dataPath = '../data/pe'
 
 # Load Person Exist dataset
 # pe_df, npe_df = DataLoader().loadPEdata(dataPath)
-# pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_30', '_31', '_33', '_34'])
-pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
+# pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_30', '_31'], filter=True)
+pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, TIMESTEMP)
 
 csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
 
@@ -40,11 +44,15 @@ print('< NPE data size > \n {}'.format(len(npe_df)))
 
 # Divide feature and label
 csi_data, csi_label = csi_df.iloc[:, :-1], csi_df.iloc[:, -1]
-print(csi_data)
+
+# Display correlation
+# corr = csi_data.corr()
+# corr_heatmap(corr)
+
 
 # Divide Train, Test dataset
-X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42, shuffle=False)
-X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.1, random_state=42, shuffle=False)
+X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42)
+X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
 
 # # Scaling
 # standardizer = StandardScaler()
@@ -72,7 +80,6 @@ print('Valid: y shape: {}'.format(y_valid.shape))
 print('Test: X shape: {}'.format(X_test.shape))
 print('Test: y shape: {}'.format(y_test.shape))
 
-TIMESTEMP = 50
 inp = (-1, X_train.shape[1], 1)
 
 X_train = X_train.reshape(inp)  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
@@ -91,9 +98,17 @@ model.add(Dense(1, activation='sigmoid'))
 
 model.summary()
 
-model.compile(optimizer=tf.keras.optimizers.Adam(lr=0.001), loss='binary_crossentropy', metrics=['accuracy'])
+learning_rate = 1e-3
+decay = learning_rate / MAX_EPOCHS
 
-es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=20)
+optimizer = Adam(
+    learning_rate=learning_rate,
+    decay=decay
+)
+
+model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+
+es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10)
 history = model.fit(X_train, y_train, epochs=100, batch_size=16, validation_data=(X_valid, y_valid), callbacks=[es])
 
 acc = model.evaluate(X_test, y_test)[1]

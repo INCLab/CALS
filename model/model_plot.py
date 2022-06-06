@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def model_train_plot(history):
@@ -25,4 +26,9 @@ def model_train_plot(history):
     loss_ax.legend(loc='upper left')
     acc_ax.legend(loc='lower left')
 
+    plt.show()
+
+
+def corr_heatmap(corr_df):
+    sns.heatmap(corr_df, cmap='viridis')
     plt.show()
