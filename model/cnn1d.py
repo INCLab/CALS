@@ -35,7 +35,7 @@ dataPath = '../data/pe'
 
 # Load Person Exist dataset
 # pe_df, npe_df = DataLoader().loadPEdata(dataPath)
-# pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_30', '_31'], filter=True)
+# pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, TIMESTEMP,['_30', '_31'], filter=True)
 pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, TIMESTEMP)
 
 csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
@@ -90,8 +90,7 @@ inp = (-1, X_train.shape[1], 1)
 X_train = X_train.reshape(inp)  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
 X_valid = X_valid.reshape(inp)
 X_test = X_test.reshape(inp)
-print(X_train[0])
-exit()
+
 print('X reshape: {}'.format(X_train.shape))
 
 model = Sequential()
