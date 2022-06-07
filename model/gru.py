@@ -46,7 +46,6 @@ dataPath = '../data/lawrence/video_csi.csv'
 
 # Divide feature and label
 csi_df = pd.read_csv('../data/lawrence/video_csi.csv')
-
 csi_data, csi_label = csi_df.iloc[:, 1:-1], csi_df.iloc[:, -1]
 
 # Display correlation
