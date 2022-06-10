@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import numpy as np
 from slidingWindow import makeSlidingWindow
 
 # Merge_pe_data 를 이미 거쳤다면 Standard Scaling이 이미 진행된 상태
@@ -22,15 +23,15 @@ class DataLoader:
         return pe_df, npe_df
 
 
-    def loadWindowPeData(self, dataPath, window_size, sub_list=None, filter=False):
+    def loadWindowPeData(self, dataPath, window_size, sub_list=None, filter=False, scaler=None):
         pe_flist, npe_flist = self.__createFileList(dataPath)
 
         if sub_list:
-            pe_df = self.__createSlidingDF(pe_flist, 'pe', window_size, sub_list, filter)
-            npe_df = self.__createSlidingDF(npe_flist, 'npe', window_size, sub_list, filter)
+            pe_df = self.__createSlidingDF(pe_flist, 'pe', window_size, sub_list, filter, scaler)
+            npe_df = self.__createSlidingDF(npe_flist, 'npe', window_size, sub_list, filter, scaler)
         else:
-            pe_df = self.__createSlidingDF(pe_flist, 'pe', window_size, sub_list, filter)
-            npe_df = self.__createSlidingDF(npe_flist, 'npe', window_size, sub_list, filter)
+            pe_df = self.__createSlidingDF(pe_flist, 'pe', window_size, sub_list, filter, scaler)
+            npe_df = self.__createSlidingDF(npe_flist, 'npe', window_size, sub_list, filter, scaler)
 
         return pe_df, npe_df
 
@@ -63,11 +64,26 @@ class DataLoader:
                 df = pd.concat([df, temp_df], ignore_index=True)
         return df
 
-    def __createSlidingDF(self, flist, isPE, window_size, sub_list=None, filter=False):
+    def __createSlidingDF(self, flist, isPE, window_size, sub_list, filter, scaler):
         df = None
         for idx, file in enumerate(flist):
+
             csi_df = pd.read_csv(file)
             subcarrier_list = None
+
+            # scaler가 활성 된경우 null&pilot 제거 후 amp로변경 및 scaling
+            if scaler is not None:
+                null_pilot_col_list = ['_' + str(x + 32) for x in [-32, -31, -30, -29, -21, -7, 0, 7, 21, 29, 30, 31]]
+                csi_df.drop(null_pilot_col_list, axis=1, inplace=True)
+                csi_df.drop(['mac', 'time'], axis=1, inplace=True)
+
+                amp_csi_df = self.__complexToAmp(csi_df.iloc[:, :-1])
+                csi_df.iloc[:, :-1] = amp_csi_df
+
+                # mac, time, label column 제외
+                scaled_csi = scaler.transform(csi_df.iloc[:, :-1])
+                csi_df.iloc[:, :-1] = scaled_csi
+
 
             # 특정 subcarrier만 추출하는경우
             if sub_list:
@@ -102,6 +118,17 @@ class DataLoader:
                 df = pd.concat([df, sliding_df], ignore_index=True)
 
         return df
+
+    def __complexToAmp(self, comp_df):
+
+        comp_df = comp_df.astype('complex')
+        amp_df = comp_df.apply(np.abs, axis=1)
+
+        return amp_df
+
+
+
+
 
 if __name__ == "__main__":
     pe_df, npe_df = DataLoader().loadWindowPeData('../data/pe')
