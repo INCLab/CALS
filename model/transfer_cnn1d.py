@@ -23,7 +23,7 @@ MAX_EPOCHS = 100
 
 # Load pretrained model
 print('======> Load model')
-model = keras.models.load_model('./cnn1d_model')
+model = keras.models.load_model('./continual_cnn1d_model')
 model.summary()
 print('======> Success')
 
@@ -32,7 +32,7 @@ print('======> Load scaler')
 scaler = joblib.load('./std_scaler.pkl')
 print('======> Success')
 
-dataPath = '../data/0615_labeled'
+dataPath = '../data/0615_labeled2'
 
 pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, TIMESTEMP, scaler=scaler)
 
@@ -45,61 +45,61 @@ print('< NPE data size > \n {}'.format(len(npe_df)))
 csi_data, csi_label = csi_df.iloc[:, :-1], csi_df.iloc[:, -1]
 
 
-# acc = model.evaluate(csi_data, csi_label)[1]
-# print("\n 테스트 정확도: %.4f" % (acc))
-
-# Divide Train, Test dataset
-X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42)
-X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
-
-# Change to ndarray
-X_train = np.array(X_train)
-X_test = np.array(X_test)
-X_valid = np.array(X_valid)
-y_valid = np.array(y_valid)
-y_train = np.array(y_train)
-y_test = np.array(y_test)
-
-print('Train: X shape: {}'.format(X_train.shape))
-print('Train: y shape: {}'.format(y_train.shape))
-print('Valid: X shape: {}'.format(X_valid.shape))
-print('Valid: y shape: {}'.format(y_valid.shape))
-print('Test: X shape: {}'.format(X_test.shape))
-print('Test: y shape: {}'.format(y_test.shape))
-
-inp = (-1, X_train.shape[1], 1)
-
-X_train = X_train.reshape(inp)  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
-X_valid = X_valid.reshape(inp)
-X_test = X_test.reshape(inp)
-
-print('X reshape: {}'.format(X_train.shape))
-
-learning_rate = 1e-3
-decay = learning_rate / MAX_EPOCHS
-
-optimizer = Adam(
-    learning_rate=learning_rate,
-    decay=decay
-)
-
-model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=[tf.keras.metrics.BinaryAccuracy(name='accuracy'),
-                                                                        tf.keras.metrics.Precision(name='precision'),
-                                                                        tf.keras.metrics.Recall(name='recall')])
-
-es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10)
-history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_data=(X_valid, y_valid), callbacks=[es])
-
-acc = model.evaluate(X_test, y_test)[1]
+acc = model.evaluate(csi_data, csi_label)[1]
 print("\n 테스트 정확도: %.4f" % (acc))
 
-# plot train process
-model_train_plot(history)
-plot_history(history)
-
-# model save
-model.save("continual_cnn1d_model")
-
-y_pred = model.predict(X_test, verbose=0)
-cm = confusion_matrix(y_test, y_pred.round())
-plot_cf_matrix(cm)
+# # Divide Train, Test dataset
+# X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42)
+# X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
+#
+# # Change to ndarray
+# X_train = np.array(X_train)
+# X_test = np.array(X_test)
+# X_valid = np.array(X_valid)
+# y_valid = np.array(y_valid)
+# y_train = np.array(y_train)
+# y_test = np.array(y_test)
+#
+# print('Train: X shape: {}'.format(X_train.shape))
+# print('Train: y shape: {}'.format(y_train.shape))
+# print('Valid: X shape: {}'.format(X_valid.shape))
+# print('Valid: y shape: {}'.format(y_valid.shape))
+# print('Test: X shape: {}'.format(X_test.shape))
+# print('Test: y shape: {}'.format(y_test.shape))
+#
+# inp = (-1, X_train.shape[1], 1)
+#
+# X_train = X_train.reshape(inp)  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
+# X_valid = X_valid.reshape(inp)
+# X_test = X_test.reshape(inp)
+#
+# print('X reshape: {}'.format(X_train.shape))
+#
+# learning_rate = 1e-3
+# decay = learning_rate / MAX_EPOCHS
+#
+# optimizer = Adam(
+#     learning_rate=learning_rate,
+#     decay=decay
+# )
+#
+# model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=[tf.keras.metrics.BinaryAccuracy(name='accuracy'),
+#                                                                         tf.keras.metrics.Precision(name='precision'),
+#                                                                         tf.keras.metrics.Recall(name='recall')])
+#
+# es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10)
+# history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_data=(X_valid, y_valid), callbacks=[es])
+#
+# acc = model.evaluate(X_test, y_test)[1]
+# print("\n 테스트 정확도: %.4f" % (acc))
+#
+# # plot train process
+# model_train_plot(history)
+# plot_history(history)
+#
+# # model save
+# model.save("continual_cnn1d_model")
+#
+# y_pred = model.predict(X_test, verbose=0)
+# cm = confusion_matrix(y_test, y_pred.round())
+# plot_cf_matrix(cm)
