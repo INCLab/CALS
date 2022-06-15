@@ -86,8 +86,8 @@ if label == 'PE' and args.np is False:
     logger.info("Done")
 elif label == 'PE' and args.np is True:
     time_ms_list = [
-        '2022-06-08 19:25:00',  # Start
-        '2022-06-08 19:30:00',  # End
+        '2022-06-15 22:12:00',  # Start
+        '2022-06-15 22:21:00',  # End
     ]
     timeList = []
     for t in time_ms_list:
