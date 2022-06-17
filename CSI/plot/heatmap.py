@@ -15,7 +15,7 @@ Plot
 
 def heatmap(csi_df, sample_start, sample_end, isComp, preprocess=False):
 
-    df = csi_df[sample_start:sample_end]
+    df = csi_df[:10001]
 
     if isComp == 'y':
         df = complexToAmp(df)
@@ -35,7 +35,7 @@ def heatmap(csi_df, sample_start, sample_end, isComp, preprocess=False):
 
     plt.pcolor(x_list, y_list, df.transpose(), cmap='jet')
     cbar = plt.colorbar()
-    cbar.set_label('Amplitude (dBm)')
+    cbar.set_label('Amplitude', fontsize=20)
 
     xtic = np.arange(0, x_list[-1] + 1, 100)
     xtic[0] = 1
@@ -43,8 +43,8 @@ def heatmap(csi_df, sample_start, sample_end, isComp, preprocess=False):
 
     plt.xticks(xtic)
     plt.yticks(ytic, [y_list[idx] for idx in [0, int(len(y_list)/4), int(len(y_list)/4*2), int(len(y_list)/4*3)]])
-    plt.xlabel('Packet Index')
-    plt.ylabel('Subcarrier Index')
+    plt.xlabel('Time', fontsize=20)
+    plt.ylabel('Subcarrier Index', fontsize=20)
 
     plt.show()
 

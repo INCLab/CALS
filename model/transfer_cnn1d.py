@@ -32,7 +32,7 @@ print('======> Load scaler')
 scaler = joblib.load('./std_scaler.pkl')
 print('======> Success')
 
-dataPath = '../data/0615_labeled2'
+dataPath = '../data/0617_labeled'
 
 pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, TIMESTEMP, scaler=scaler)
 
