@@ -14,9 +14,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import confusion_matrix
 from model_plot import model_train_plot, corr_heatmap, plot_history, plot_cf_matrix
 
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-TIMESTEMP = 50
+TIMESTEMP = 10
 MAX_EPOCHS = 100
 
 dataPath = '../data/pe'
@@ -67,12 +68,12 @@ X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_siz
 # joblib.dump(scaler, './std_scaler.pkl')
 
 # Change to ndarray
-X_train = np.array(X_train)
-X_test = np.array(X_test)
-X_valid = np.array(X_valid)
-y_valid = np.array(y_valid)
-y_train = np.array(y_train)
-y_test = np.array(y_test)
+# X_train = np.array(X_train)
+# X_test = np.array(X_test)
+# X_valid = np.array(X_valid)
+# y_valid = np.array(y_valid)
+# y_train = np.array(y_train)
+# y_test = np.array(y_test)
 
 # # Sampling
 # SAMPLE_NUM = 8000
@@ -88,18 +89,19 @@ print('Test: y shape: {}'.format(y_test.shape))
 
 inp = (-1, X_train.shape[1], 1)
 
-X_train = X_train.reshape(inp)  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
-X_valid = X_valid.reshape(inp)
-X_test = X_test.reshape(inp)
+# X_train = X_train.reshape(inp)  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
+# X_valid = X_valid.reshape(inp)
+# X_test = X_test.reshape(inp)
 
 print('X reshape: {}'.format(X_train.shape))
 
 model = Sequential()
-model.add(Conv1D(128, 3, padding='valid', activation='relu', input_shape=(TIMESTEMP, 1)))
+model.add(Conv1D(128, 5, padding='valid', activation='relu', input_shape=(TIMESTEMP, 1)))
 model.add(MaxPooling1D())
-model.add(Conv1D(128, 1, padding='valid', activation='relu'))
+model.add(Conv1D(128, 3, padding='valid', activation='relu'))
 model.add(GlobalMaxPooling1D())
 model.add(Dense(128, activation='relu'))
+model.add(Dense(64, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
 model.summary()
@@ -123,7 +125,7 @@ acc = model.evaluate(X_test, y_test)[1]
 print("\n 테스트 정확도: %.4f" % (acc))
 
 # model save
-model.save("cnn1d_model")
+# model.save("cnn1d_model")
 
 # plot train process
 model_train_plot(history)

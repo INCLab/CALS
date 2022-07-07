@@ -14,12 +14,15 @@ from model_plot import model_train_plot
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
+TIMESTEMP = 70
+MAX_EPOCHS = 100
+
 dataPath = '../data/pe'
 
 # Load Person Exist dataset
 # pe_df, npe_df = DataLoader().loadPEdata(dataPath, ['_30', '_31', '_33', '_34'])
 # pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
-pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, ['_34'])
+pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, TIMESTEMP)
 
 csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
 
@@ -34,8 +37,8 @@ print('< NPE data size > \n {}'.format(len(npe_df)))
 csi_data, csi_label = csi_df.iloc[:, :-1], csi_df.iloc[:, -1]
 
 # Divide Train, Test dataset
-X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42, shuffle=False)
-X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.1, random_state=42, shuffle=False)
+X_train, X_test, y_train, y_test = train_test_split(csi_data, csi_label, test_size=0.2, random_state=42, shuffle=True)
+X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.1, random_state=42, shuffle=True)
 
 # # Scaling
 # standardizer = StandardScaler()
@@ -63,9 +66,6 @@ print('Valid: y shape: {}'.format(y_valid.shape))
 print('Test: X shape: {}'.format(X_test.shape))
 print('Test: y shape: {}'.format(y_test.shape))
 
-TIMESTEMP = 50
-MAX_EPOCHS = 100
-
 inp = (-1, X_train.shape[1], 1)
 
 X_train = X_train.reshape(inp)  # LSTM은 input으로 3차원 (datasize, timestamp, feature)
@@ -85,9 +85,10 @@ optimizer = Adam(
 
 model = Sequential()
 model.add(LSTM(64, input_shape=(TIMESTEMP, 1), return_sequences=False))
-#model.add(Dropout(0.2))
+# model.add(Dropout(0.3))
+# model.add(LSTM(128, input_shape=(TIMESTEMP, 1), return_sequences=False))
+# model.add(Dropout(0.3))
 model.add(Dense(64, activation='relu'))
-#model.add(Dropout(0.2))
 model.add(Dense(1, activation='sigmoid'))
 
 model.summary()

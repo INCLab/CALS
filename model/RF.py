@@ -11,10 +11,11 @@ from sklearn.ensemble import RandomForestClassifier
 from dataloader import DataLoader
 
 dataPath = '../data/pe'
+TIMESTEMP = 70
 
 # Load Person Exist dataset
-pe_df, npe_df = DataLoader().loadPEdata(dataPath,  ['_30', '_31', '_33', '_34'])
-#pe_df, npe_df = DataLoader().loadWindowPeData(dataPath)
+#pe_df, npe_df = DataLoader().loadPEdata(dataPath,  ['_30', '_31', '_33', '_34'])
+pe_df, npe_df = DataLoader().loadWindowPeData(dataPath, TIMESTEMP)
 
 csi_df = pd.concat([pe_df, npe_df], ignore_index=True)
 
