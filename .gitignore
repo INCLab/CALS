@@ -3,6 +3,6 @@ __pycache__/
 .idea
 .DS_Store
 
-data/0428test
-data/0502_csi_mot
-data/test3_3rasp
+csi/data/0428test
+csi/data/0502_csi_mot
+csi/data/test3_3rasp

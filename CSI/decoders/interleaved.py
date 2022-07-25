@@ -194,7 +194,7 @@ def __find_bandwidth(incl_len):
     )
 
     # The number of bytes before we
-    # have CSI data is 60. By adding
+    # have csi data is 60. By adding
     # 128-60 to frame_len, bandwidth
     # will be calculated correctly even
     # if frame_len changes +/- 128
@@ -227,7 +227,7 @@ def __find_nsamples_max(pcap_filesize, nsub):
     # PCAP packet header is 12 bytes
     # Ethernet + IP + UDP headers are 46 bytes
     # Nexmon metadata is 18 bytes
-    # CSI is nsub*4 bytes long
+    # csi is nsub*4 bytes long
     #
     # So each packet is 12 + 46 + 18 + nsub*4 bytes long
     nsamples_max = int(
@@ -296,7 +296,7 @@ def read_pcap(pcap_filepath, bandwidth=0, nsamples_max=0):
         # 2 bytes: Core and Spatial Stream   @ 12 - 14
         # 2 bytes: ChanSpec                  @ 14 - 16
         # 2 bytes: Chip Version              @ 16 - 18
-        # nsub*4 bytes: CSI Data             @ 18 - 18 + nsub*4
+        # nsub*4 bytes: csi Data             @ 18 - 18 + nsub*4
 
         mac[nsamples*6: (nsamples+1)*6] = fc[ptr+4: ptr+10]
         seq[nsamples*2: (nsamples+1)*2] = fc[ptr+10: ptr+12]
@@ -306,7 +306,7 @@ def read_pcap(pcap_filepath, bandwidth=0, nsamples_max=0):
         ptr += (frame_len - 42)
         nsamples += 1
 
-    # Convert CSI bytes to numpy array
+    # Convert csi bytes to numpy array
     csi_np = np.frombuffer(
         csi,
         dtype = np.int16,

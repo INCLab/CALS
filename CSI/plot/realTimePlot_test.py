@@ -85,7 +85,7 @@ def AmpRTPlotter(csi_df, spf_sub=None):
 if __name__ == '__main__':
     # Path
     test_name = 'test3_3rasp'
-    data_path = '../../data'
+    data_path = '../data'
     data_path = os.path.join(data_path, test_name, 'csi/csi_b827ebba9e7b.csv')
     #csi_list = os.listdir(data_path)
 

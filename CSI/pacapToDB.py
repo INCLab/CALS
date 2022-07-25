@@ -4,7 +4,7 @@ from scapy.all import *
 import config
 import pandas as pd
 import numpy as np
-from database.tracking_db import tracking_db
+from csi.database.tracking_db import tracking_db
 
 decoder = importlib.import_module(f'decoders.{config.decoder}') # This is also an import
 
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     limit = 26000000
     count = 0
     timestamps = []
-    filename = "../data/class_0.pcap"
+    filename = "data/class_0.pcap"
 
     # Read pcap file and create dataframe
     try:
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         print(f'File {filename} not found.')
         exit(-1)
 
-    # Create CSI data frame
+    # Create csi data frame
     csi_df = pd.DataFrame(np.abs(csi_samples.get_all_csi()))
 
     sniff(offline=filename, stop_filter=func, store=False)
