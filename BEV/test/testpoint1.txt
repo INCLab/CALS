@@ -1,0 +1,27 @@
+ch01
+frame 925 325
+frame 686 392
+frame 923 563
+frame 1181 458
+map 782 416
+map 781 636
+map 1062 638
+map 1063 416
+ch02
+frame 609 591
+frame 399 724
+frame 671 830
+frame 894 637
+map 1059 636
+map 1061 415
+map 782 417
+map 783 636
+ch04
+frame 1381 468
+frame 1143 387
+frame 912 503
+frame 1179 625
+map 784 418
+map 780 634
+map 1062 637
+map 1061 415

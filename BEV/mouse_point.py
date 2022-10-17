@@ -6,8 +6,7 @@ des_x, des_y = -1, -1
 drawing = False
 f = None
 
-
-def start(tempfile, frame_dir, map_name):
+def start(tempfile, ref_video_dir, map_name):
     global f
 
     if not os.path.exists(tempfile):
@@ -16,12 +15,29 @@ def start(tempfile, frame_dir, map_name):
         os.remove(tempfile)
         f = open(tempfile, 'w+')
 
-    for i in os.listdir(frame_dir):
-        print(i)
-        dir = os.path.join(frame_dir, i)
-        print(os.listdir(dir)[0])
+    if not os.listdir(ref_video_dir):
+        print("RefVideoFile NotFound!")
+        exit()
 
-        frame = cv2.imread(os.path.join(dir, os.listdir(dir)[0]), -1)
+    for i in os.listdir(ref_video_dir):
+        camera_channel = i[:4]
+        print(i)
+
+        # Capture video frame
+        vidcap = cv2.VideoCapture(os.path.join(ref_video_dir, i))
+
+        ret, img = vidcap.read()
+
+        # Get 30th frame image
+        while vidcap.isOpened():
+            ret, img = vidcap.read()
+
+            if int(vidcap.get(1)) == 5:
+                break
+
+        f.write(camera_channel + '\n')
+
+        frame = img
         cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
         cv2.moveWindow('frame', 80, 80)
         cv2.setMouseCallback('frame', select_points_src, frame)
@@ -29,7 +45,7 @@ def start(tempfile, frame_dir, map_name):
 
         map = cv2.imread(map_name, -1)
         cv2.namedWindow('map')
-        cv2.moveWindow('map', 780, 80)
+        cv2.moveWindow('map', 80, 80)
         cv2.setMouseCallback('map', select_points_des, map)
         print(map.shape)
 
@@ -69,4 +85,4 @@ def select_points_des(event, x, y, flags, param):
         drawing = False
 
 if __name__ == '__main__':
-    start('../temp/points.txt', '../data/0502_csi_mot/ref/frame', '../temp/csi_map_ref.png')
+    start('test/testpoint.txt', 'test/ref_point_video/map1/', 'test/map_img/ref0807_1.png')
