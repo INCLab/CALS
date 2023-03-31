@@ -1,11 +1,11 @@
-from database.tracking_db import tracking_db
+from database.csi_db import csi_db
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
 import pywt
 
 # =========  CSI labeling  =========
-db = tracking_db()
+db = csi_db()
 csi_label_list = []
 
 csi_datas = db.get_csi()

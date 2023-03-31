@@ -3,8 +3,8 @@ from sqlalchemy import Table, Column, MetaData, create_engine, insert, select
 from sqlalchemy.dialects.mysql import DOUBLE, DECIMAL, INTEGER
 
 
-class tracking_db:
-    db_user = 'tracking'
+class csi_db:
+    db_user = 'csi'
     db_pw = '1q2w3e4r!'
     db_host = 'loacking'
     db_encoding = 'utf8'

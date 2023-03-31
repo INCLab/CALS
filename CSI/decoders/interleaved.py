@@ -1,5 +1,5 @@
 '''
- zeroby0's code
+ Modified zeroby0's code
 '''
 
 '''
@@ -97,8 +97,8 @@ class SampleSet(object):
     def get_seq(self, index):
         sc = int.from_bytes( #uint16: SC
             self.seq[index*2: (index+1)*2],
-            byteorder = 'little',
-            signed = False
+            byteorder='little',
+            signed=False
         )
         fn = sc % 16 # Fragment Number
         sc = int((sc - fn)/16) # Sequence Number
@@ -120,7 +120,6 @@ class SampleSet(object):
 
         return csi
 
-    # Added by jji
     def get_subcarrier(self, index):
 
         sub = list()
@@ -132,7 +131,6 @@ class SampleSet(object):
 
         return np.array(sub)
 
-    # Added byjji
     def get_all_csi(self, rm_nulls=False, rm_pilots=False):
         new_csi = list()
         for i in range(0, len(self.csi)):
@@ -147,7 +145,6 @@ class SampleSet(object):
             packet = np.delete(packet, np.where(packet == -10000), axis=0)
 
             new_csi.append(packet)
-
 
         return new_csi
 
@@ -210,7 +207,6 @@ def __find_bandwidth(incl_len):
     return bandwidth
 
 
-
 def __find_nsamples_max(pcap_filesize, nsub):
     '''
         Returns an estimate for the maximum possible number
@@ -237,6 +233,7 @@ def __find_nsamples_max(pcap_filesize, nsub):
     )
 
     return nsamples_max
+
 
 def read_pcap(pcap_filepath, bandwidth=0, nsamples_max=0):
     '''
@@ -328,6 +325,7 @@ def read_pcap(pcap_filepath, bandwidth=0, nsamples_max=0):
         csi_cmplx),
         bandwidth
     )
+
 
 if __name__ == "__main__":
     samples = read_pcap('pcap_files/output-40.pcap')
