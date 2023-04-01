@@ -1,5 +1,5 @@
 CREATE DATABASE `csi`;
-USE `csi_data`;
+USE `csi`;
 
 CREATE TABLE `csi` (
   `time` FLOAT NOT NULL,

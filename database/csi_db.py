@@ -5,8 +5,8 @@ from sqlalchemy.dialects.mysql import DOUBLE, DECIMAL, INTEGER
 
 class csi_db:
     db_user = 'csi'
-    db_pw = '1q2w3e4r!'
-    db_host = 'loacking'
+    db_pw = '1q2w3e4r0110!'
+    db_host = 'localhost'
     db_encoding = 'utf8'
 
     def __init__(self):
