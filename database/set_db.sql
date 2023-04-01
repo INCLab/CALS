@@ -3,8 +3,10 @@ USE `csi_data`;
 
 CREATE TABLE `csi` (
   `time` FLOAT NOT NULL,
-  `MAC` varchar(512) PRIMARY NOT NULL,
-  `band` varchar NOT NULL,
-  `bandwidth` varchar NOT NULL,
-  `values` TIMESTAMP DEFAULT (current_timestamp) on update current_timestamp
+  `MAC` CHAR(255) NOT NULL,
+  `band` CHAR(128) NOT NULL,
+  `bandwidth` CHAR(128) NOT NULL,
+  `i_values` FLOAT,
+  `q_values` FLOAT,
+  PRIMARY KEY(`MAC`)
 );
