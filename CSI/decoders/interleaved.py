@@ -5,23 +5,15 @@
 '''
 Interleaved
 ===========
-
 Fast and efficient methods to extract
-Interleaved CSI samples in PCAP files.
-
+Interleaved csi samples in PCAP files.
 ~230k samples per second.
-
 Suitable for bcm43455c0 and bcm4339 chips.
-
 Requires Numpy.
-
 Usage
 -----
-
 import decoders.interleaved as decoder
-
 samples = decoder.read_pcap('path_to_pcap_file')
-
 Bandwidth is inferred from the pcap file, but
 can also be explicitly set:
 samples = decoder.read_pcap('path_to_pcap_file', bandwidth=40)
@@ -33,6 +25,7 @@ __all__ = [
 
 import os
 import numpy as np
+from scapy.all import rdpcap
 
 # Indexes of Null and Pilot OFDM subcarriers
 # https://www.oreilly.com/library/view/80211ac-a-survival/9781449357702/ch02.html
@@ -43,7 +36,7 @@ nulls = {
     ]],
 
     40: [x+64 for x in [
-        -64, -63, -62, -61, -60, -59, -1, 
+        -64, -63, -62, -61, -60, -59, -1,
               63,  62,  61,  60,  59,  1,  0
     ]],
 
@@ -54,7 +47,7 @@ nulls = {
 
     160: [x+256 for x in [
         -256, -255, -254, -253, -252, -251, -129, -128, -127, -5, -4, -3, -2, -1,
-               255,  254,  253,  252,  251,  129,  128,  127,  5,  4,  3,  3,  1,  0 
+               255,  254,  253,  252,  251,  129,  128,  127,  5,  4,  3,  3,  1,  0
     ]]
 }
 
@@ -65,7 +58,7 @@ pilots = {
     ]],
 
     40: [x+64 for x in [
-        -53, -25, -11, 
+        -53, -25, -11,
          53,  25,  11
     ]],
 
@@ -85,11 +78,12 @@ class SampleSet(object):
         A helper class to contain data read
         from pcap files.
     '''
-    def __init__(self, samples, bandwidth):
+    def __init__(self, samples, bandwidth, pkttimes):
         self.mac, self.seq, self.css, self.csi = samples
 
         self.nsamples = self.csi.shape[0]
         self.bandwidth = bandwidth
+        self.pkttimes = pkttimes
 
     def get_mac(self, index):
         return self.mac[index*6: (index+1)*6]
@@ -104,7 +98,7 @@ class SampleSet(object):
         sc = int((sc - fn)/16) # Sequence Number
 
         return (sc, fn)
-    
+
     def get_css(self, index):
         return self.css[index*2: (index+1)*2]
 
@@ -147,9 +141,10 @@ class SampleSet(object):
             packet = np.delete(packet, np.where(packet == -10000), axis=0)
 
             new_csi.append(packet)
-
-
         return new_csi
+
+    def get_times(self):
+        return self.pkttimes
 
     def print(self, index):
         # Mac ID
@@ -163,26 +158,26 @@ class SampleSet(object):
         css = self.get_css(index).hex()
 
         print(
-            f'''
-Sample #{index}
----------------
-Source Mac ID: {macid}
-Sequence: {sc}.{fn}
-Core and Spatial Stream: 0x{css}
-            '''
-        )
+                f'''
+                Sample #{index}
+                ---------------
+                Source Mac ID: {macid}
+                Sequence: {sc}.{fn}
+                Core and Spatial Stream: 0x{css}
+                '''
+            )
+
 
 
 def __find_bandwidth(incl_len):
     '''
         Determines bandwidth
         from length of packets.
-        
+
         incl_len is the 4 bytes
         indicating the length of the
         packet in packet header
         https://wiki.wireshark.org/Development/LibpcapFileFormat/
-
         This function is immune to small
         changes in packet lengths.
     '''
@@ -194,7 +189,7 @@ def __find_bandwidth(incl_len):
     )
 
     # The number of bytes before we
-    # have CSI data is 60. By adding
+    # have csi data is 60. By adding
     # 128-60 to frame_len, bandwidth
     # will be calculated correctly even
     # if frame_len changes +/- 128
@@ -215,7 +210,6 @@ def __find_nsamples_max(pcap_filesize, nsub):
     '''
         Returns an estimate for the maximum possible number
         of samples in the pcap file.
-
         The size of the pcap file is divided by the size of
         a packet to calculate the number of samples. However,
         some packets have a padding of a few bytes, so the value
@@ -227,7 +221,7 @@ def __find_nsamples_max(pcap_filesize, nsub):
     # PCAP packet header is 12 bytes
     # Ethernet + IP + UDP headers are 46 bytes
     # Nexmon metadata is 18 bytes
-    # CSI is nsub*4 bytes long
+    # csi is nsub*4 bytes long
     #
     # So each packet is 12 + 46 + 18 + nsub*4 bytes long
     nsamples_max = int(
@@ -240,10 +234,9 @@ def __find_nsamples_max(pcap_filesize, nsub):
 
 def read_pcap(pcap_filepath, bandwidth=0, nsamples_max=0):
     '''
-        Reads CSI samples from
+        Reads csi samples from
         a pcap file. A SampleSet
         object is returned.
-
         Bandwidth and maximum samples
         are inferred from the pcap file by
         default, but you can also set them explicitly.
@@ -252,7 +245,7 @@ def read_pcap(pcap_filepath, bandwidth=0, nsamples_max=0):
     pcap_filesize = os.stat(pcap_filepath).st_size
     with open(pcap_filepath, 'rb') as pcapfile:
         fc = pcapfile.read()
-    
+
     if bandwidth == 0:
         bandwidth = __find_bandwidth(
             # 32-36 is where the incl_len
@@ -296,7 +289,7 @@ def read_pcap(pcap_filepath, bandwidth=0, nsamples_max=0):
         # 2 bytes: Core and Spatial Stream   @ 12 - 14
         # 2 bytes: ChanSpec                  @ 14 - 16
         # 2 bytes: Chip Version              @ 16 - 18
-        # nsub*4 bytes: CSI Data             @ 18 - 18 + nsub*4
+        # nsub*4 bytes: csi Data             @ 18 - 18 + nsub*4
 
         mac[nsamples*6: (nsamples+1)*6] = fc[ptr+4: ptr+10]
         seq[nsamples*2: (nsamples+1)*2] = fc[ptr+10: ptr+12]
@@ -306,7 +299,7 @@ def read_pcap(pcap_filepath, bandwidth=0, nsamples_max=0):
         ptr += (frame_len - 42)
         nsamples += 1
 
-    # Convert CSI bytes to numpy array
+    # Convert csi bytes to numpy array
     csi_np = np.frombuffer(
         csi,
         dtype = np.int16,
@@ -321,13 +314,35 @@ def read_pcap(pcap_filepath, bandwidth=0, nsamples_max=0):
             csi_np[:nsamples, ::2] + 1.j * csi_np[:nsamples, 1::2], axes=(1,)
     )
 
+    # Extract time
+    a = rdpcap(pcap_filepath)
+
+    sessions = a.sessions()
+
+    for k, v in sessions.items():
+
+        tot_packets = len(v)
+
+        proto, source, dir, target = k.split()
+        srcip, srcport = source.split(":")
+        dstip, dstport = target.split(":")
+        if dir == '>':
+            direction = "outbound"
+        else:
+            direction = "inbound"
+
+        pkttimes = list()
+        for i in range(0, tot_packets):
+            pkttimes.append(v[i].time)
+
     return SampleSet(
         (mac,
         seq,
         css,
         csi_cmplx),
-        bandwidth
+        bandwidth,
+        pkttimes
     )
 
 if __name__ == "__main__":
-    samples = read_pcap('pcap_files/output-40.pcap')
+    samples = read_pcap('../../pcap/Empty_Ex_Home_1.pcap')

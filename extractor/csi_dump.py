@@ -45,7 +45,6 @@ def sniffing(nicname):
                 before_ts = ts
                 continue
 
-
         eth = dpkt.ethernet.Ethernet(pkt)
         ip = eth.data
         udp = ip.data

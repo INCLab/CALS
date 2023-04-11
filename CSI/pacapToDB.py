@@ -4,9 +4,9 @@ from scapy.all import *
 import config
 import pandas as pd
 import numpy as np
-from database.tracking_db import tracking_db
+from database.csi_db import tracking_db
 
-decoder = importlib.import_module(f'decoders.{config.decoder}') # This is also an import
+decoder = importlib.import_module(f'decoders.{config.decoder}')
 
 db = tracking_db()
 
