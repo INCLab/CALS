@@ -19,11 +19,9 @@
 <p align="center"><img src="https://user-images.githubusercontent.com/51084152/231077556-d091eb24-0ebd-41dd-9257-8ff6f2cb4dfd.png"  width="400" height="400"/></p>   
 
 ### CALS Architecture
-<p align="center"><img src="https://user-images.githubusercontent.com/51084152/231078252-398a1f02-095d-4fe3-85a0-dc7e9856a35b.png"  width="500" height="300"/>
-
-There are two versions included: a demo version that works with pre-extracted CSI data in CSV format, 
-and a database version that collects CSI data directly from the Raspberry Pi extractor and stores it in a MySQL database
-for further process.
+<p align="center"><img src="https://user-images.githubusercontent.com/51084152/231078252-398a1f02-095d-4fe3-85a0-dc7e9856a35b.png"  width="500" height="300"/></p>
+  
+- There are two versions included: a demo version that works with pre-extracted CSI data in CSV format, and a database version that collects CSI data directly from the Raspberry Pi extractor and stores it in a MySQL database for further process.
 ---
 ## Prerequisites
 
