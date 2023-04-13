@@ -64,15 +64,33 @@ git clone https://github.com/INCLab/CALS.git
 ---
 
 ## Usage - CSV
-### 1. Time Syncronization  
+### 1. Time syncronization  
 After installing Nexmon firmware on Raspberry Pi, synchronize time with the camera server.  
 >*Method: Network Time Protocol (NTP)*  
 >*One of the easiest ways to synchronize time between two devices is to use the Network Time Protocol (NTP). This protocol allows devices to synchronize their clocks over a network connection.*
 
 ### 2. Collect CSI data & record video
+- Change to the extractor directory on the Raspberry Pi extractor:
+```
+cd csi
+```
 
+- Enter the following command on the Raspberry Pi extractor:
+```
+python3 extract_csi_csv.py
+```
+*Note*  
+*※ Must be done under sudo privileges*  
+*※ If you want to stop CSI extraction, press the keyboard 's'*
 
-### 3. 
+### 3. Vision module process
+Generate a MOT output by following the instructions in the [ByteTrack](https://github.com/ifzhang/ByteTrack) repository.
+
+### 4. CSI labeling
+Set the **time**, **sampling rate** on `cfg.py` and enter the following command on the server:
+```
+python csi_labeling.py
+```
 
 ---
 ## Referenced Projects
