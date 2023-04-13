@@ -21,7 +21,7 @@
 ### CALS Architecture
 <p align="center"><img src="https://user-images.githubusercontent.com/51084152/231078252-398a1f02-095d-4fe3-85a0-dc7e9856a35b.png"  width="500" height="300"/></p>
   
-- There are two versions included: a demo version that works with pre-extracted CSI data in CSV format, and a database version that collects CSI data directly from the Raspberry Pi extractor and stores it in a MySQL database for further process.
+- There are two versions included: a CSV version that works with pre-extracted CSI data in CSV format, and a DB version that collects CSI data directly from the Raspberry Pi extractor and stores it in a MySQL database for further process.
 ---
 ## Prerequisites
 
@@ -63,9 +63,16 @@ git clone https://github.com/INCLab/CALS.git
 2. Install the  [Nexmon CSI Extractor](https://github.com/seemoo-lab/nexmon_csi)
 ---
 
-## Usage
+## Usage - CSV
 ### 1. Time Syncronization  
-After install the Nexmon firmware on Raspberry Pi, 
+After installing Nexmon firmware on Raspberry Pi, synchronize time with the camera server.  
+>*Method: Network Time Protocol (NTP)*  
+>*One of the easiest ways to synchronize time between two devices is to use the Network Time Protocol (NTP). This protocol allows devices to synchronize their clocks over a network connection.*
+
+### 2. Collect CSI data & record video
+
+
+### 3. 
 
 ---
 ## Referenced Projects
