@@ -66,3 +66,13 @@ git clone https://github.com/INCLab/CALS.git
 ## Usage
 ### 1. Time Syncronization  
 After install the Nexmon firmware on Raspberry Pi, 
+
+---
+## Referenced Projects
+
+This project takes inspiration from the following two open-source projects:
+
+1. **Nexmon**: The Nexmon project provides firmware patches for collecting CSI on Broadcom Wi-Fi chips. For more information about this project, please visit the [Nexmon GitHub repository](https://github.com/seemoo-lab/nexmon_csi).
+
+2. **ByteTrack**: ByteTrack offers an efficient algorithm for real-time multi-object tracking. For more information about this project, please visit the [ByteTrack GitHub repository](https://github.com/ifzhang/ByteTrack).
+
